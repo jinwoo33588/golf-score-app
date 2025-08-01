@@ -1,8 +1,8 @@
-// ✅ src/components/round/HoleStepForm.jsx
-import { useState } from 'react';
+// src/components/round/HoleStepForm.jsx
+import React, { useState } from 'react';
 
 const HoleStepForm = ({ roundData, setRoundData }) => {
-  const [current, setCurrent] = useState(0); // 0 ~ 17
+  const [current, setCurrent] = useState(0);
   const hole = roundData[current];
 
   const handleChange = (field, value) => {
@@ -14,21 +14,21 @@ const HoleStepForm = ({ roundData, setRoundData }) => {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">
-        ⛳ {hole.hole}홀 입력 <span className="text-base text-gray-500">(파{hole.par})</span>
+        ⛳ {hole.hole}홀 입력 <span className="text-base text-gray-500">(Par {hole.par})</span>
       </h1>
 
       <div className="flex flex-col gap-4">
         <input
           type="number"
           value={hole.score}
-          onChange={(e) => handleChange('score', e.target.value)}
+          onChange={e => handleChange('score', e.target.value)}
           placeholder="스코어"
           className="border px-2 py-1 rounded"
         />
 
         <select
           value={hole.teeshot}
-          onChange={(e) => handleChange('teeshot', e.target.value)}
+          onChange={e => handleChange('teeshot', e.target.value)}
           className="border px-2 py-1 rounded"
         >
           <option value="">티샷</option>
@@ -40,7 +40,7 @@ const HoleStepForm = ({ roundData, setRoundData }) => {
         <input
           type="text"
           value={hole.approach}
-          onChange={(e) => handleChange('approach', e.target.value)}
+          onChange={e => handleChange('approach', e.target.value)}
           placeholder="어프로치"
           className="border px-2 py-1 rounded"
         />
@@ -48,23 +48,33 @@ const HoleStepForm = ({ roundData, setRoundData }) => {
         <input
           type="number"
           value={hole.putts}
-          onChange={(e) => handleChange('putts', e.target.value)}
+          onChange={e => handleChange('putts', e.target.value)}
           placeholder="퍼팅 수"
           className="border px-2 py-1 rounded"
         />
+
+        <label className="flex items-center gap-1">
+          <input
+            type="checkbox"
+            checked={hole.gir}
+            onChange={e => handleChange('gir', e.target.checked)}
+            className="form-checkbox"
+          />
+          GIR
+        </label>
       </div>
 
       <div className="flex justify-between mt-6">
         <button
-          onClick={() => setCurrent((prev) => Math.max(prev - 1, 0))}
+          onClick={() => setCurrent(prev => Math.max(prev - 1, 0))}
           disabled={current === 0}
           className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
         >
           이전 홀
         </button>
         <button
-          onClick={() => setCurrent((prev) => Math.min(prev + 1, 17))}
-          disabled={current === 17}
+          onClick={() => setCurrent(prev => Math.min(prev + 1, roundData.length - 1))}
+          disabled={current === roundData.length - 1}
           className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
         >
           다음 홀

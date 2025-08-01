@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// src/pages/AddRoundPage.jsx
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HoleStepForm from '../components/round/HoleStepForm';
 import FullRoundForm from '../components/round/FullRoundForm';
@@ -18,7 +19,7 @@ const generateInitialData = (courseName) => {
     teeshot: '',
     approach: '',
     putts: '',
-    gir: false, // GIR 추가된 필드
+    gir: false,
   }));
 };
 
@@ -36,20 +37,55 @@ const AddRoundPage = () => {
   };
 
   const handleSave = async () => {
+    console.log('▶ handleSave called', { date, course, roundData });
     if (!date || !course || roundData.length === 0) {
       alert('날짜와 코스를 선택하고 정보를 입력해주세요.');
       return;
     }
 
     try {
-      const response = await axios.post('/round', {
+      // 1) 라운드 생성
+      const {
+        data: { round },
+      } = await axios.post('/rounds', {
+        courseName: course,
         date,
-        course,
-        holes: roundData,
+        weather: '-',
+      });
+      const roundId = round.id;
+
+      // 2) 홀 생성
+      await axios.post(`/rounds/${roundId}/holes`, {
+        holes: roundData.map((h) => ({ hole_number: h.hole, par: Number(h.par) })),
       });
 
-      alert('✅ 라운드 저장 성공!');
-      console.log(response.data);
+      // 3) 생성된 홀 ID 조회
+      const { data: holes } = await axios.get(`/rounds/${roundId}/holes`);
+
+      // 4) 샷 생성
+      const shotPromises = holes.map((hole, idx) => {
+        const hData = roundData[idx];
+        const shots = [];
+        if (hData.teeshot) {
+          shots.push({ shot_number: 1, club: hData.teeshot });
+        }
+        if (hData.approach) {
+          shots.push({ shot_number: shots.length + 1, club: hData.approach });
+        }
+        if (hData.putts !== '') {
+          shots.push({
+            shot_number: shots.length + 1,
+            club: 'Putter',
+            result: `${hData.putts} putts`,
+          });
+        }
+        return shots.length
+          ? axios.post(`/holes/${hole.id}/shots`, { shots })
+          : Promise.resolve();
+      });
+      await Promise.all(shotPromises);
+
+      alert('✅ 라운드, 홀, 샷 저장 완료!');
       navigate('/');
     } catch (err) {
       console.error('❌ 저장 실패:', err.response?.data || err.message);
@@ -78,7 +114,9 @@ const AddRoundPage = () => {
         >
           <option value="">코스를 선택하세요</option>
           {Object.keys(courseData).map((name) => (
-            <option key={name} value={name}>{name}</option>
+            <option key={name} value={name}>
+              {name}
+            </option>
           ))}
         </select>
       </div>
@@ -88,13 +126,17 @@ const AddRoundPage = () => {
         <div className="mb-4 flex gap-2">
           <button
             onClick={() => setViewMode('full')}
-            className={`px-4 py-2 rounded ${viewMode === 'full' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${
+              viewMode === 'full' ? 'bg-green-600 text-white' : 'bg-gray-200'
+            }`}
           >
             18홀 전체 보기
           </button>
           <button
             onClick={() => setViewMode('step')}
-            className={`px-4 py-2 rounded ${viewMode === 'step' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${
+              viewMode === 'step' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            }`}
           >
             홀별 보기
           </button>
@@ -102,11 +144,12 @@ const AddRoundPage = () => {
       )}
 
       {/* 입력 폼 */}
-      {course && (
-        viewMode === 'full'
-          ? <FullRoundForm roundData={roundData} setRoundData={setRoundData} />
-          : <HoleStepForm roundData={roundData} setRoundData={setRoundData} />
-      )}
+      {course &&
+        (viewMode === 'full' ? (
+          <FullRoundForm roundData={roundData} setRoundData={setRoundData} />
+        ) : (
+          <HoleStepForm roundData={roundData} setRoundData={setRoundData} />
+        ))}
 
       {/* 저장 버튼 */}
       {course && (

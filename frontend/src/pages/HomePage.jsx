@@ -2,29 +2,33 @@
 import React, { useEffect, useState } from 'react';
 import RoundCard from '../components/RoundCard';
 import StatBox from '../components/StatBox';
-import { useNavigate } from 'react-router-dom';
-import './HomePage.css';
 import Topbar from '../components/TopBar';
+import { useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosInstance';
-import { useLocation } from 'react-router-dom';
+import './HomePage.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [rounds, setRounds] = useState([]);
 
   useEffect(() => {
     const fetchRounds = async () => {
       try {
-        const res = await axios.get('/round');
-        setRounds(res.data); // 서버에서 받아온 라운드 목록
+        const res = await axios.get('/rounds');  // → /api/rounds
+        // 백엔드 필드(course_name, totalScore) → 프론트 필드(course, score) 매핑
+        const mapped = res.data.map(r => ({
+          id:     r.id,
+          course: r.course_name,
+          date:   r.date,
+          score:  r.totalScore ?? r.score  // totalScore가 없으면 기존 score 사용
+        }));
+        setRounds(mapped);
       } catch (err) {
         console.error('❌ 라운드 불러오기 실패:', err);
       }
     };
-
     fetchRounds();
-  }, [location]);
+  }, []);
 
   return (
     <div className="home-container">
@@ -39,7 +43,10 @@ const HomePage = () => {
 
       <div className="round-header">
         <h2 className="round-title">최근 라운드</h2>
-        <button onClick={() => navigate('/round/new')} className="add-round-btn">
+        <button
+          onClick={() => navigate('/round/new')}
+          className="add-round-btn"
+        >
           + 새 라운드
         </button>
       </div>

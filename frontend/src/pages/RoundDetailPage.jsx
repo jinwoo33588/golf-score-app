@@ -1,5 +1,6 @@
+// src/pages/RoundDetailPage.jsx
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import axios from '../utils/axiosInstance';
 import './RoundDetailPage.css';
 
@@ -11,7 +12,7 @@ const RoundDetailPage = () => {
   useEffect(() => {
     const fetchRound = async () => {
       try {
-        const res = await axios.get(`/round/${id}`);
+        const res = await axios.get(`/rounds/${id}`);  // → /api/rounds/:id
         setRound(res.data);
       } catch (err) {
         console.error('❌ 상세 라운드 가져오기 실패', err);
@@ -23,28 +24,30 @@ const RoundDetailPage = () => {
   const handleDelete = async () => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
     try {
-      await axios.delete(`/round/${id}`);
+      await axios.delete(`/rounds/${id}`);
       alert('삭제 완료');
-      navigate('/'); // 홈으로 이동
+      navigate('/');
     } catch (err) {
       console.error('❌ 삭제 실패', err);
     }
   };
 
-  if (!round) return <div>로딩 중...</div>;
+  if (!round) return <div>로딩 중…</div>;
 
   return (
     <div className="round-detail-container">
       <h1 className="round-detail-title">⛳ 라운드 상세</h1>
 
       <div className="round-detail-actions">
-        <button className="delete-btn" onClick={handleDelete}>🗑 삭제</button>
+        <button className="delete-btn" onClick={handleDelete}>
+          🗑 삭제
+        </button>
       </div>
 
       <div className="round-detail-summary">
         <p><strong>날짜:</strong> {round.date}</p>
-        <p><strong>코스명:</strong> {round.course}</p>
-        <p><strong>총 스코어:</strong> {round.score}</p>
+        <p><strong>코스명:</strong> {round.course_name}</p>
+        <p><strong>총 스코어:</strong> {round.totalScore}</p>
         <p><strong>FIR:</strong> {round.fir}%</p>
         <p><strong>GIR:</strong> {round.gir}%</p>
         <p><strong>퍼팅 수:</strong> {round.putts}</p>
@@ -63,16 +66,24 @@ const RoundDetailPage = () => {
           </tr>
         </thead>
         <tbody>
-          {round.holes.map((h, idx) => (
-            <tr key={idx}>
-              <td>{h.holeNumber}</td>
-              <td>{h.par}</td>
-              <td>{h.score}</td>
-              <td>{h.teeshot}</td>
-              <td>{h.approach}</td>
-              <td>{h.putts}</td>
-            </tr>
-          ))}
+          {round.holes.map(h => {
+            const teeShot = h.shots?.[0]?.club ?? '-';
+            const approach =
+              h.shots && h.shots.length > 1
+                ? h.shots[h.shots.length - 2].club
+                : '-';
+
+            return (
+              <tr key={h.id}>
+                <td>{h.hole_number}</td>
+                <td>{h.par}</td>
+                <td>{h.score ?? '-'}</td>
+                <td>{teeShot}</td>
+                <td>{approach}</td>
+                <td>{h.putts ?? '-'}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

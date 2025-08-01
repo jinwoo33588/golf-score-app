@@ -2,7 +2,9 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:4000/api', // 백엔드 주소
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:4000/api'
+  //           ↑ 여기에 '/api'까지 포함되어야,
+  // axios.post('/rounds') → http://localhost:4000/api/rounds 로 요청이 나감
 });
 
 // 요청 인터셉터: 요청마다 자동으로 토큰 추가

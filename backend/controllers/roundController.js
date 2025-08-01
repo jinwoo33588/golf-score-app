@@ -1,140 +1,82 @@
-const pool = require('../config/db');
+// backend/controllers/roundController.js
+const {
+  createRound,
+  getRoundsByUser,
+  getRoundById,
+  deleteRound
+} = require('../models/roundModel');
 
-// 숫자 필드를 안전하게 변환하는 유틸 함수
-const safeInt = (val) => {
-  return val === '' || val === undefined ? null : Number(val);
-};
-
-exports.createRound = async (req, res) => {
-  const { course, date, holes } = req.body;
-  const userId = req.user.id;
-
+exports.getRoundsHandler = async (req, res, next) => {
   try {
-    const conn = await pool.getConnection();
-    await conn.beginTransaction();
-
-    if (!userId || !course || !date) {
-      return res.status(400).json({ error: '필수 데이터 누락' });
-    }
-
-    // 라운드 저장
-    const [roundResult] = await conn.execute(
-      'INSERT INTO Rounds (userId, course, date) VALUES (?, ?, ?)',
-      [userId, course, date]
-    );
-    const roundId = roundResult.insertId;
-
-    // 홀 데이터 저장
-    for (const hole of holes) {
-      const { holeNumber, par, score, teeshot, approach, putts, gir } = hole;
-
-      await conn.execute(
-        `INSERT INTO RoundHoles (roundId, holeNumber, par, score, teeshot, approach, putts, gir)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          roundId,
-          safeInt(holeNumber),
-          safeInt(par),
-          safeInt(score),
-          teeshot || null,
-          approach || null,
-          safeInt(putts),
-          gir ?? null
-        ]
-      );
-    }
-
-    await conn.commit();
-    conn.release();
-
-    res.status(201).json({ message: '라운드 저장 완료' });
+    const userId = req.user.id;
+    const rounds = await getRoundsByUser(userId);
+    res.json(rounds);
   } catch (err) {
-    console.error('❌ 라운드 저장 오류:', err);
-    res.status(500).json({ error: '라운드 저장 실패' });
-    console.log('userId:', userId, 'course:', course, 'date:', date);
+    next(err);
   }
 };
 
-exports.getRounds = async (req, res) => {
-  const userId = req.user.id;
-
+exports.createRoundHandler = async (req, res, next) => {
   try {
-    const [rows] = await pool.execute(
-      'SELECT id, course, date FROM Rounds WHERE userId = ? ORDER BY date DESC',
-      [userId]
-    );
+    console.log('▶ createRoundHandler body:', req.body);
+    const userId = req.user.id;
+    const { courseName, date, weather = '-' } = req.body;
 
-    // 총 스코어 계산 추가 (필요 시)
-    const roundsWithScore = await Promise.all(rows.map(async round => {
-      const [holes] = await pool.execute(
-        'SELECT score FROM RoundHoles WHERE roundId = ?',
-        [round.id]
-      );
-      const totalScore = holes.reduce((sum, h) => sum + (h.score || 0), 0);
-      return { ...round, score: totalScore };
+    const roundId = await createRound(userId, courseName, date, weather);
+    console.log('▶ createRoundHandler inserted roundId:', roundId);
+
+    const round = await getRoundById(roundId);
+    res.status(201).json({ round });
+  } catch (err) {
+    console.error('❌ createRoundHandler error:', err);
+    next(err);
+  }
+};
+
+exports.getRoundDetailHandler = async (req, res, next) => {
+  try {
+    const roundId = req.params.roundId;
+    const userId = req.user.id;
+    const round = await getRoundById(roundId);
+    if (!round || round.user_id !== userId) {
+      return res.status(404).json({ error: '해당 라운드를 찾을 수 없습니다.' });
+    }
+
+    const holes = await require('../models/holeModel').getHolesByRound(roundId);
+    await Promise.all(holes.map(async hole => {
+      const shots = await require('../models/shotModel').getShotsByHole(hole.id);
+      hole.shots = shots;
     }));
 
-    res.json(roundsWithScore);
-  } catch (err) {
-    console.error('❌ 라운드 목록 불러오기 오류:', err);
-    res.status(500).json({ error: '라운드 목록 불러오기 실패' });
-  }
-};
-
-exports.getRoundById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const [roundRows] = await pool.execute(
-      'SELECT * FROM Rounds WHERE id = ? AND userId = ?', [id, req.user.id]
-    );
-    if (roundRows.length === 0) return res.status(404).json({ error: '라운드 없음' });
-
-    const round = roundRows[0];
-
-    const [holeRows] = await pool.execute(
-      'SELECT * FROM RoundHoles WHERE roundId = ?', [id]
-    );
-
-    const totalScore = holeRows.reduce((sum, h) => sum + (h.score || 0), 0);
-    const fir = Math.round(
-      (holeRows.filter(h => h.teeshot === '페어웨이').length / 18) * 100
-    );
-    const gir = Math.round(
-      (holeRows.filter(h => h.gir === 1).length / 18) * 100
-    );
-    const putts = holeRows.reduce((sum, h) => sum + (h.putts || 0), 0);
+    // 통계
+    const totalScore = holes.reduce((sum, h) => sum + (h.score || 0), 0);
+    const fir = holes.filter(h => h.fw_hit).length;
+    const gir = holes.filter(h => h.gir).length;
+    const putts = holes.reduce((sum, h) => sum + (h.putts || 0), 0);
 
     res.json({
       id: round.id,
-      course: round.course,
+      course_name: round.course_name,
       date: round.date,
-      score: totalScore,
+      weather: round.weather,
+      totalScore,
       fir,
       gir,
       putts,
-      holes: holeRows
+      holes
     });
   } catch (err) {
-    console.error('❌ 상세 조회 실패:', err);
-    res.status(500).json({ error: '상세 조회 실패' });
+    next(err);
   }
 };
 
-exports.deleteRound = async (req, res) => {
-  const { id } = req.params;
+exports.deleteRoundHandler = async (req, res, next) => {
   try {
-    const conn = await pool.getConnection();
-    await conn.beginTransaction();
-
-    await conn.execute('DELETE FROM RoundHoles WHERE roundId = ?', [id]);
-    await conn.execute('DELETE FROM Rounds WHERE id = ? AND userId = ?', [id, req.user.id]);
-
-    await conn.commit();
-    conn.release();
-
+    const roundId = req.params.roundId;
+    console.log('▶ deleteRoundHandler roundId:', roundId);
+    await deleteRound(roundId);
     res.json({ message: '삭제 완료' });
   } catch (err) {
-    console.error('❌ 라운드 삭제 실패:', err);
-    res.status(500).json({ error: '삭제 실패' });
+    next(err);
   }
 };
