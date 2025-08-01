@@ -1,0 +1,49 @@
+.round-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.round-detail-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+}
+
+.round-detail-summary {
+  background-color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+  line-height: 1.8;
+}
+
+.round-detail-subtitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.round-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.round-detail-table th,
+.round-detail-table td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.round-detail-table th {
+  background-color: #f3f4f6;
+}
+.delete-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
