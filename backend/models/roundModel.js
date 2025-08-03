@@ -50,9 +50,59 @@ async function deleteRound(roundId) {
   return result.affectedRows;  // 삭제된 행 수
 }
 
+/**
+ * 특정 라운드 하나를, 통계까지 함께 꺼내는 함수
+ */
+async function getRoundWithStats(roundId) {
+  const [rows] = await pool.query(
+    `SELECT
+       r.id,
+       r.user_id,
+       r.course_name,
+       r.date,
+       r.weather,
+       COALESCE(SUM(h.score),0)     AS totalScore,
+       COALESCE(SUM(h.putts),0)     AS totalPutts,
+       ROUND(COALESCE(AVG(h.fw_hit)*100,0),0) AS firPercent,
+       ROUND(COALESCE(AVG(h.gir)*100,0),0)    AS girPercent
+     FROM rounds r
+     LEFT JOIN holes h ON h.round_id = r.id
+     WHERE r.id = ?
+     GROUP BY r.id`,
+    [roundId]
+  );
+  return rows[0] || null;
+}
+
+/**
+ * 유저의 모든 라운드를, 통계까지 함께 꺼내는 함수
+ */
+async function getRoundsByUserWithStats(userId) {
+  const [rows] = await pool.query(
+    `SELECT
+       r.id,
+       r.user_id,
+       r.course_name,
+       r.date,
+       r.weather,
+       COALESCE(SUM(h.score),0)     AS totalScore,
+       ROUND(COALESCE(AVG(h.fw_hit)*100,0),0) AS firPercent,
+       ROUND(COALESCE(AVG(h.gir)*100,0),0)    AS girPercent
+     FROM rounds r
+     LEFT JOIN holes h ON h.round_id = r.id
+     WHERE r.user_id = ?
+     GROUP BY r.id
+     ORDER BY r.date DESC`,
+    [userId]
+  );
+  return rows;
+}
+
 module.exports = {
   createRound,
   getRoundsByUser,
   getRoundById,
-  deleteRound
+  deleteRound,
+  getRoundWithStats,
+  getRoundsByUserWithStats
 };

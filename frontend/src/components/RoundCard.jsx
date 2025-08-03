@@ -16,8 +16,8 @@ const RoundCard = ({ round }) => {
           <p className="roundcard-date">{round.date}</p>
         </div>
         <div className="roundcard-score">
-          <p className="roundcard-score-label">스코어</p>
-          <p className="roundcard-score-value">{round.score}</p>
+          <p className="roundcard-score-label">날씨</p>
+          <p className="roundcard-score-value">{round.weather}</p>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // src/pages/AddRoundPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HoleStepForm from '../components/round/HoleStepForm';
 import FullRoundForm from '../components/round/FullRoundForm';
@@ -13,31 +13,32 @@ const courseData = {
 const generateInitialData = (courseName) => {
   const parArray = courseData[courseName] || Array(18).fill(4);
   return parArray.map((par, i) => ({
-    hole: i + 1,
+    hole:       i + 1,
     par,
-    score: '',
-    teeshot: '',
-    approach: '',
-    putts: '',
-    gir: false,
+    score:      '',
+    teeshot:    '',
+    approach:   '',
+    putts:      '',
+    gir:        false,
+    fw_hit:     false,
+    penalties:  0
   }));
 };
 
-const AddRoundPage = () => {
-  const [viewMode, setViewMode] = useState('full');
-  const [course, setCourse] = useState('');
-  const [date, setDate] = useState('');
-  const [roundData, setRoundData] = useState([]);
+export default function AddRoundPage() {
+  const [viewMode, setViewMode]     = useState('full');
+  const [course, setCourse]         = useState('');
+  const [date, setDate]             = useState('');
+  const [roundData, setRoundData]   = useState([]);
   const navigate = useNavigate();
 
-  const handleCourseChange = (e) => {
-    const selected = e.target.value;
-    setCourse(selected);
-    setRoundData(generateInitialData(selected));
-  };
+  useEffect(() => {
+    if (course) {
+      setRoundData(generateInitialData(course));
+    }
+  }, [course]);
 
   const handleSave = async () => {
-    console.log('▶ handleSave called', { date, course, roundData });
     if (!date || !course || roundData.length === 0) {
       alert('날짜와 코스를 선택하고 정보를 입력해주세요.');
       return;
@@ -45,45 +46,62 @@ const AddRoundPage = () => {
 
     try {
       // 1) 라운드 생성
-      const {
-        data: { round },
-      } = await axios.post('/rounds', {
+      const { data: { round } } = await axios.post('/rounds', {
         courseName: course,
         date,
-        weather: '-',
+        weather: '-'
       });
       const roundId = round.id;
 
-      // 2) 홀 생성
+      // 2) 홀 정보 일괄 생성
       await axios.post(`/rounds/${roundId}/holes`, {
-        holes: roundData.map((h) => ({ hole_number: h.hole, par: Number(h.par) })),
+        holes: roundData.map(h => ({
+          hole_number: Number(h.hole),
+          par:         Number(h.par),
+          score:       h.score    !== '' ? Number(h.score) : null,
+          putts:       h.putts    !== '' ? Number(h.putts) : null,
+          gir:         Boolean(h.gir),
+          fw_hit:      Boolean(h.fw_hit),
+          penalties:   Number(h.penalties)
+        }))
       });
 
       // 3) 생성된 홀 ID 조회
       const { data: holes } = await axios.get(`/rounds/${roundId}/holes`);
 
-      // 4) 샷 생성
-      const shotPromises = holes.map((hole, idx) => {
-        const hData = roundData[idx];
-        const shots = [];
-        if (hData.teeshot) {
-          shots.push({ shot_number: 1, club: hData.teeshot });
+      // 4) 샷 정보 생성
+      const shotCalls = [];
+      holes.forEach((hole, idx) => {
+        const h = roundData[idx];
+        let shotNumber = 1;
+
+        if (h.teeshot) {
+          shotCalls.push(
+            axios.post(`/holes/${hole.id}/shots`, {
+              shot_number:    shotNumber++,
+              club:           h.teeshot
+            })
+          );
         }
-        if (hData.approach) {
-          shots.push({ shot_number: shots.length + 1, club: hData.approach });
+        if (h.approach) {
+          shotCalls.push(
+            axios.post(`/holes/${hole.id}/shots`, {
+              shot_number:    shotNumber++,
+              club:           h.approach
+            })
+          );
         }
-        if (hData.putts !== '') {
-          shots.push({
-            shot_number: shots.length + 1,
-            club: 'Putter',
-            result: `${hData.putts} putts`,
-          });
+        if (h.putts) {
+          shotCalls.push(
+            axios.post(`/holes/${hole.id}/shots`, {
+              shot_number:    shotNumber,
+              club:           'Putter',
+              result:         `${h.putts} putts`
+            })
+          );
         }
-        return shots.length
-          ? axios.post(`/holes/${hole.id}/shots`, { shots })
-          : Promise.resolve();
       });
-      await Promise.all(shotPromises);
+      await Promise.all(shotCalls);
 
       alert('✅ 라운드, 홀, 샷 저장 완료!');
       navigate('/');
@@ -104,19 +122,17 @@ const AddRoundPage = () => {
         <input
           type="date"
           value={date}
-          onChange={(e) => setDate(e.target.value)}
+          onChange={e => setDate(e.target.value)}
           className="border px-4 py-2 rounded"
         />
         <select
           value={course}
-          onChange={handleCourseChange}
+          onChange={e => setCourse(e.target.value)}
           className="border px-4 py-2 rounded"
         >
           <option value="">코스를 선택하세요</option>
-          {Object.keys(courseData).map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
+          {Object.keys(courseData).map(name => (
+            <option key={name} value={name}>{name}</option>
           ))}
         </select>
       </div>
@@ -144,12 +160,11 @@ const AddRoundPage = () => {
       )}
 
       {/* 입력 폼 */}
-      {course &&
-        (viewMode === 'full' ? (
-          <FullRoundForm roundData={roundData} setRoundData={setRoundData} />
-        ) : (
-          <HoleStepForm roundData={roundData} setRoundData={setRoundData} />
-        ))}
+      {course && (
+        viewMode === 'full'
+          ? <FullRoundForm roundData={roundData} setRoundData={setRoundData} />
+          : <HoleStepForm roundData={roundData} setRoundData={setRoundData} />
+      )}
 
       {/* 저장 버튼 */}
       {course && (
@@ -163,7 +178,5 @@ const AddRoundPage = () => {
         </div>
       )}
     </div>
-  );
-};
-
-export default AddRoundPage;
+);
+}

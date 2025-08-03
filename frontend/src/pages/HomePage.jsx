@@ -1,4 +1,3 @@
-// src/pages/HomePage.jsx
 import React, { useEffect, useState } from 'react';
 import RoundCard from '../components/RoundCard';
 import StatBox from '../components/StatBox';
@@ -14,13 +13,15 @@ const HomePage = () => {
   useEffect(() => {
     const fetchRounds = async () => {
       try {
-        const res = await axios.get('/rounds');  // → /api/rounds
-        // 백엔드 필드(course_name, totalScore) → 프론트 필드(course, score) 매핑
+        const res = await axios.get('/rounds');
         const mapped = res.data.map(r => ({
           id:     r.id,
-          course: r.course_name,
+          course: r.course_name,            // DB 컬럼명에 맞춤
           date:   r.date,
-          score:  r.totalScore ?? r.score  // totalScore가 없으면 기존 score 사용
+          // score:  r.total_score != null     // total_score이 null이 아닐 때만 값 표시
+          //           ? r.total_score
+          //           : '-'
+          weather: r.weather
         }));
         setRounds(mapped);
       } catch (err) {

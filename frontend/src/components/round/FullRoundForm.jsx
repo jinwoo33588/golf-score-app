@@ -17,41 +17,25 @@ const FullRoundForm = ({ roundData, setRoundData }) => {
             {hole.hole}홀 <span className="text-sm text-gray-500">(Par {hole.par})</span>
           </div>
 
+          {/* 스코어 */}
           <input
             type="number"
-            value={hole.score}
+            value={hole.score || ''}
             onChange={e => handleChange(idx, 'score', e.target.value)}
             placeholder="스코어"
             className="border px-2 py-1 w-20 rounded"
           />
 
-          <select
-            value={hole.teeshot}
-            onChange={e => handleChange(idx, 'teeshot', e.target.value)}
-            className="border px-2 py-1 rounded"
-          >
-            <option value="">티샷</option>
-            <option value="페어웨이">페어웨이</option>
-            <option value="러프">러프</option>
-            <option value="OB/패널티">OB/패널티</option>
-          </select>
-
-          <input
-            type="text"
-            value={hole.approach}
-            onChange={e => handleChange(idx, 'approach', e.target.value)}
-            placeholder="어프로치"
-            className="border px-2 py-1 w-32 rounded"
-          />
-
+          {/* 퍼팅 수 */}
           <input
             type="number"
-            value={hole.putts}
+            value={hole.putts || ''}
             onChange={e => handleChange(idx, 'putts', e.target.value)}
             placeholder="퍼팅 수"
             className="border px-2 py-1 w-20 rounded"
           />
 
+          {/* GIR */}
           <label className="flex items-center gap-1">
             <input
               type="checkbox"
@@ -61,6 +45,27 @@ const FullRoundForm = ({ roundData, setRoundData }) => {
             />
             GIR
           </label>
+
+          {/* 페어웨이 안착 */}
+          <label className="flex items-center gap-1">
+            <input
+              type="checkbox"
+              checked={hole.fw_hit}
+              onChange={e => handleChange(idx, 'fw_hit', e.target.checked)}
+              className="form-checkbox"
+            />
+            FIR
+          </label>
+
+          {/* 벌타 */}
+          <input
+            type="number"
+            value={hole.penalties}
+            onChange={e => handleChange(idx, 'penalties', e.target.value)}
+            placeholder="벌타"
+            className="border px-2 py-1 w-20 rounded"
+            min="0"
+          />
         </div>
       ))}
     </div>
