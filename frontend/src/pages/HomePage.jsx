@@ -1,39 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import RoundCard from '../components/RoundCard';
 import StatBox from '../components/StatBox';
-import Topbar from '../components/TopBar';
 import { useNavigate } from 'react-router-dom';
-import axios from '../utils/axiosInstance';
+import useRounds from '../hooks/useRounds';
+// import axios from '../service/axiosInstance';
 import './HomePage.css';
 
 const HomePage = () => {
-  const navigate = useNavigate();
-  const [rounds, setRounds] = useState([]);
+  // const navigate = useNavigate();
+  // const [rounds, setRounds] = useState([]);
 
-  useEffect(() => {
-    const fetchRounds = async () => {
-      try {
-        const res = await axios.get('/rounds');
-        const mapped = res.data.map(r => ({
-          id:     r.id,
-          course: r.course_name,            // DB 컬럼명에 맞춤
-          date:   r.date,
-          // score:  r.total_score != null     // total_score이 null이 아닐 때만 값 표시
-          //           ? r.total_score
-          //           : '-'
-          weather: r.weather
-        }));
-        setRounds(mapped);
-      } catch (err) {
-        console.error('❌ 라운드 불러오기 실패:', err);
-      }
-    };
-    fetchRounds();
-  }, []);
+  const navigate = useNavigate();
+  const { rounds} = useRounds();
+
+  // useEffect(() => {
+  //   const fetchRounds = async () => {
+  //     try {
+  //       const res = await axios.get('/rounds');
+  //       const mapped = res.data.map(r => ({
+  //         id:     r.id,
+  //         course: r.course_name,            // DB 컬럼명에 맞춤
+  //         date:   r.date,
+  //         // score:  r.total_score != null     // total_score이 null이 아닐 때만 값 표시
+  //         //           ? r.total_score
+  //         //           : '-'
+  //         weather: r.weather
+  //       }));
+  //       setRounds(mapped);
+  //     } catch (err) {
+  //       console.error('❌ 라운드 불러오기 실패:', err);
+  //     }
+  //   };
+  //   fetchRounds();
+  // }, []);
+   // 최근 3개만 잘라내서, RoundCard가 기대하는 필드로 매핑
+   const recent = rounds.slice(0,5);
+
 
   return (
     <div className="home-container">
-      <Topbar />
       <h1 className="home-title">⛳ 내 골프 라운드 기록</h1>
 
       <div className="stat-boxes">
@@ -45,7 +50,7 @@ const HomePage = () => {
       <div className="round-header">
         <h2 className="round-title">최근 라운드</h2>
         <button
-          onClick={() => navigate('/round/new')}
+          onClick={() => navigate('/rounds/new')}
           className="add-round-btn"
         >
           + 새 라운드
@@ -53,8 +58,8 @@ const HomePage = () => {
       </div>
 
       <div className="round-list">
-        {rounds.map(round => (
-          <RoundCard key={round.id} round={round} />
+      {recent.map(round => (
+         <RoundCard  key={round.id} round={round} />
         ))}
       </div>
     </div>

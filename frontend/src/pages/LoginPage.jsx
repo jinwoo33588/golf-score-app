@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './LoginPage.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -24,38 +25,35 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">로그인</h2>
+    <div className="login-modern">
+      <h2 className="login-modern__title">로그인</h2>
       <input
         type="email"
         placeholder="이메일"
+        className="login-modern__input"
         value={email}
         onChange={e => setEmail(e.target.value)}
-        className="w-full border p-2 mb-2"
+        // …state, onChange 등은 생략
       />
       <input
         type="password"
         placeholder="비밀번호"
+        className="login-modern__input"
         value={pw}
         onChange={e => setPw(e.target.value)}
-        className="w-full border p-2 mb-2"
       />
-      <button
-        onClick={handleLogin}
-        className="bg-blue-500 text-white px-4 py-2 w-full"
+      <button 
+       onClick={handleLogin}
+       className="login-modern__button"
       >
         로그인
       </button>
-      <p className="text-sm mt-4">
-  아직 계정이 없나요?{' '}
-  <a href="/register" className="text-blue-600 underline">
-    회원가입
-  </a>
-</p>
-
-
+      <p className="login-modern__footer">
+        아직 계정이 없나요?{' '}
+        <a href="/register" className="login-modern__link">회원가입</a>
+      </p>
     </div>
-    
+
     
   );
 };

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HoleStepForm from '../components/round/HoleStepForm';
 import FullRoundForm from '../components/round/FullRoundForm';
-import axios from '../utils/axiosInstance';
+import axios from '../services/axiosInstance';
 
 const courseData = {
   '아시아나CC': [4, 5, 4, 3, 4, 3, 5, 3, 4, 4, 4, 5, 3, 4, 4, 5, 3, 4],

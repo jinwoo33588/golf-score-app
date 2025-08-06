@@ -1,4 +1,4 @@
-// mysql2의 promise API를 써야 async/await로 깔끔하게 처리할 수 있어요.
+// backend/config/db.js
 const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({

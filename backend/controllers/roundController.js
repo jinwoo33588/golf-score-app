@@ -11,6 +11,7 @@ exports.getRoundsHandler = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const rounds = await getRoundsByUserWithStats(userId);
+    console.log('▶ getRoundsHandler 결과:', rounds);
     res.json(rounds);
   } catch (err) {
     next(err);

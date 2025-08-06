@@ -1,46 +1,74 @@
+
+
 .roundcard {
-  background-color: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.roundcard:hover {
-  background-color: #f3f4f6; /* Tailwind gray-100 */
-}
-
-.roundcard-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 24px;
+  margin: 6px 0;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.roundcard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.roundcard-info {
+  flex: 1;
+  min-width: 0; /** 텍스트 오버플로우 방지 **/
 }
 
 .roundcard-course {
-  font-size: 1.125rem; /* text-lg */
+  font-size: 1rem;
   font-weight: 600;
-  margin: 0;
+  color: #222;
 }
 
-.roundcard-date {
-  font-size: 0.875rem; /* text-sm */
-  color: #6b7280; /* gray-500 */
-  margin-top: 0.25rem;
+.roundcard-meta {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #666;
+  margin: 6px 0;
 }
 
-.roundcard-score {
-  text-align: right;
+.roundcard-players {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #444;
 }
 
-.roundcard-score-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
+.tag {
+  background: #e6f6ff;
+  color: #007aff;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-right: 6px;
 }
 
-.roundcard-score-value {
+.player-list {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score-box {
+  min-width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.25rem;
   font-weight: 700;
-  margin-top: 0.25rem;
+  color: #fff;
+  margin-left: 16px;
 }

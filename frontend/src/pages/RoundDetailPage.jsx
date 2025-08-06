@@ -1,55 +1,41 @@
 // src/pages/RoundDetailPage.jsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from '../utils/axiosInstance';
+import useRoundDetail from '../hooks/useRoundDetail';
+
 import './RoundDetailPage.css';
 
 export default function RoundDetailPage() {
-  const { id } = useParams();
+  const { roundId } = useParams();  // URL param 이름과 일치시킵니다
   const navigate = useNavigate();
-  const [round, setRound] = useState(null);
+  const { round, loading, error, deleteRound } = useRoundDetail(roundId);
 
-  useEffect(() => {
-    const fetchRound = async () => {
-      try {
-        const res = await axios.get(`/rounds/${id}`);
-        setRound(res.data);
-      } catch (err) {
-        console.error('❌ 상세 라운드 가져오기 실패', err);
-      }
-    };
-    fetchRound();
-  }, [id]);
+  if (loading) return <div>로딩중.</div>;
+  if (error)   return <div>⚠️ 로드 실패: {error.message}</div>;
+  if (!round) return <div>데이터가 없습니다.</div>;
 
-  const handleDelete = async () => {
+  const onDelete = async () => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    try {
-      await axios.delete(`/rounds/${id}`);
-      alert('삭제 완료');
-      navigate('/');
-    } catch (err) {
-      console.error('❌ 삭제 실패', err);
-    }
+    await deleteRound();
+    navigate('/rounds');
   };
-
-  if (!round) return <div>로딩 중…</div>;
 
   return (
     <div className="round-detail-container">
       <h1 className="round-detail-title">⛳ 라운드 상세</h1>
 
       <div className="round-detail-actions">
-        <button className="delete-btn" onClick={handleDelete}>
+        <button className="delete-btn" onClick={onDelete}>
           🗑 삭제
         </button>
       </div>
 
       <div className="round-detail-summary">
         <p><strong>날짜:</strong> {round.date}</p>
-        <p><strong>코스명:</strong> {round.course_name}</p>
-        <p><strong>총 스코어:</strong> {round.totalScore}</p>
-        <p><strong>FIR:</strong> {round.firPercent}%</p>
-        <p><strong>GIR:</strong> {round.girPercent}%</p>
+        <p><strong>코스명:</strong> {round.course}</p>
+        <p><strong>총 스코어:</strong> {round.score}</p>
+        <p><strong>FIR:</strong> {round.fir}%</p>
+        <p><strong>GIR:</strong> {round.gir}%</p>
         <p><strong>퍼팅 수:</strong> {round.totalPutts}</p>
       </div>
 
@@ -71,11 +57,11 @@ export default function RoundDetailPage() {
             const approach = h.shots?.find(s => s.shot_number === 2)?.club ?? '-';
             return (
               <tr key={h.id}>
-                <td>{h.hole_number}</td>
+                <td>{h.hole}</td>
                 <td>{h.par}</td>
                 <td>{h.score  ?? '-'}</td>
-                <td>{teeShot}</td>
-                <td>{approach}</td>
+                <td>{h.teeShot}</td>
+                <td>{h.approach}</td>
                 <td>{h.putts ?? '-'}</td>
               </tr>
             );
