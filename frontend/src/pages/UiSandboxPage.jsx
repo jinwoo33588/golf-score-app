@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 
-const LS_KEY = 'uiSandbox18_v1';
+const LS_KEY = 'uiSandbox18_v2';
 
 // ---------- 유틸 ----------
 const pad2 = (n) => String(n).padStart(2, '0');
@@ -9,7 +9,14 @@ const todayStr = () => {
   return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 };
 const signLabel = (n) => (n > 0 ? `+${n}` : `${n}`);
+const clamp = (v, min=null, max=null) => {
+  let x = v;
+  if (min != null) x = Math.max(min, x);
+  if (max != null) x = Math.min(max, x);
+  return x;
+};
 
+// 초기 18홀 생성
 function createInitialHoles() {
   return Array.from({ length: 18 }, (_, i) => ({
     hole_number: i + 1,
@@ -24,44 +31,13 @@ function createInitialHoles() {
   }));
 }
 
+// ---------- 코스 PAR 프리셋 ----------
+const COURSE_PRESETS = {
+  '아시아나CC': [4, 5, 4, 3, 4, 3, 5, 3, 4,  4, 4, 5, 3, 4, 4, 5, 3, 4],
+  // 추가 코스는 여기에
+};
+
 // ---------- 공통 UI ----------
-function NumberStepper({ label, value, onChange, min = null, max = null, step = 1 }) {
-  const clamp = (v) => {
-    if (min != null) v = Math.max(min, v);
-    if (max != null) v = Math.min(max, v);
-    return v;
-  };
-  const dec = () => onChange(clamp((value ?? 0) - step));
-  const inc = () => onChange(clamp((value ?? 0) + step));
-
-  const onInput = (e) => {
-    const raw = e.target.value;
-    if (raw === '' || raw === '-') return onChange('');
-    const n = Number(raw);
-    if (!Number.isNaN(n)) onChange(clamp(n));
-  };
-
-  return (
-    <div className="ui-row">
-      <div className="ui-label">{label}</div>
-      <div className="ui-stepper">
-        <button type="button" className="ui-btn" onClick={dec} aria-label={`${label} 감소`}>−</button>
-        <input
-          className="ui-input-number"
-          inputMode="numeric"
-          value={value ?? 0}
-          onChange={onInput}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          enterKeyHint="done"
-        />
-        <button type="button" className="ui-btn" onClick={inc} aria-label={`${label} 증가`}>＋</button>
-      </div>
-    </div>
-  );
-}
-
 function YesNoToggle({ label, value, onChange }) {
   return (
     <div className="ui-row">
@@ -82,7 +58,6 @@ function YesNoToggle({ label, value, onChange }) {
   );
 }
 
-// ---------- 샷 편집 ----------
 function ShotEditor({ shot, onChange, onRemove }) {
   return (
     <div className="ui-card shot-item">
@@ -131,7 +106,6 @@ function ShotEditor({ shot, onChange, onRemove }) {
   );
 }
 
-// ---------- 1홀 단위 카드 ----------
 function HoleUnit({ hole, onChange }) {
   const h = hole || {};
   const set = (key, val) => onChange({ ...h, [key]: val });
@@ -157,12 +131,12 @@ function HoleUnit({ hole, onChange }) {
 
   return (
     <div className="ui-card">
-      <div className="hole-header">
+      <div className="hole-header sticky-top">
         <div className="hole-title">🕳️ {h.hole_number}H</div>
         <div className="hole-par">
           <span>Par</span>
           <input
-            style={{maxWidth:80}}
+            style={{maxWidth:90}}
             inputMode="numeric"
             value={h.par ?? 4}
             onChange={e => set('par', e.target.value === '' ? '' : Number(e.target.value))}
@@ -170,9 +144,24 @@ function HoleUnit({ hole, onChange }) {
         </div>
       </div>
 
-      <NumberStepper label="스코어(±)" value={h.score ?? 0} min={-5} max={10} onChange={v => set('score', v)} />
-      <NumberStepper label="퍼팅 수"   value={h.putts ?? 0} min={0}  max={10} onChange={v => set('putts', v)} />
-      <NumberStepper label="페널티 개수" value={h.penalties ?? 0} min={0} max={10} onChange={v => set('penalties', v)} />
+      <div className="kv">
+        <div className="kv-item">
+          <div className="kv-t">스코어(±)</div>
+          <div className="kv-v">{signLabel(h.score ?? 0)}</div>
+        </div>
+        <div className="kv-item">
+          <div className="kv-t">퍼팅</div>
+          <div className="kv-v">{h.putts ?? 0}</div>
+        </div>
+        <div className="kv-item">
+          <div className="kv-t">FIR</div>
+          <div className="kv-v">{h.fir == null ? '—' : h.fir ? 'YES' : 'NO'}</div>
+        </div>
+        <div className="kv-item">
+          <div className="kv-t">GIR</div>
+          <div className="kv-v">{h.gir == null ? '—' : h.gir ? 'YES' : 'NO'}</div>
+        </div>
+      </div>
 
       <YesNoToggle label="FIR" value={h.fir} onChange={v => set('fir', v)} />
       <YesNoToggle label="GIR" value={h.gir} onChange={v => set('gir', v)} />
@@ -203,14 +192,32 @@ function HoleUnit({ hole, onChange }) {
   );
 }
 
+// ---------- 롱프레스 훅 ----------
+function useHold(action, deps = [], speed = 110) {
+  const timer = useRef(null);
+  const start = useCallback(() => {
+    action();
+    timer.current = setInterval(action, speed);
+  }, deps); // eslint-disable-line
+  const stop = useCallback(() => {
+    if (timer.current) clearInterval(timer.current);
+    timer.current = null;
+  }, []);
+  return {
+    onMouseDown: start, onMouseUp: stop, onMouseLeave: stop,
+    onTouchStart: start, onTouchEnd: stop, onTouchCancel: stop,
+  };
+}
+
 // ---------- 메인 페이지 ----------
 export default function UISandbox() {
   // 스타일(외부 CSS 없이 사용)
   const styles = `
-  :root { --pad:16px; --radius:16px; }
-  * { box-sizing: border-box; }
-  body { background:#f8fafc; }
-  .wrap { max-width: 760px; margin:0 auto; padding: var(--pad); padding-bottom: 96px; }
+  :root { --pad:16px; --radius:16px; --safe: env(safe-area-inset-bottom); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body, #root { height:100%; }
+  body { background:#f8fafc; font-size:16px; }
+  .wrap { max-width: 780px; margin:0 auto; padding: var(--pad); padding-bottom: 120px; }
   h1 { font-size:22px; font-weight:800; margin: 0 0 8px; }
   .sub { color:#666; font-size:12px; margin-bottom: 12px; }
 
@@ -220,62 +227,64 @@ export default function UISandbox() {
   .ui-row { display:flex; align-items:center; justify-content:space-between; margin:12px 0; gap:12px; }
   .ui-label { font-weight:600; font-size:14px; white-space:nowrap; }
 
-  .ui-stepper { display:flex; align-items:center; gap:8px; }
-  .ui-btn { min-width:48px; height:48px; border-radius:12px; border:1px solid #ddd; background:#fff; font-size:22px; }
-  .ui-input-number {
-    width:88px; height:48px; text-align:center; border:1px solid #ddd; border-radius:10px; font-size:16px;
-    -webkit-appearance: none; appearance: none;
-  }
-
   .ui-toggle { display:flex; gap:8px; }
-  .ui-pill { padding:10px 16px; border-radius:999px; border:1px solid #ddd; background:#fff; font-weight:600; }
+  .ui-pill { padding:12px 18px; border-radius:999px; border:1px solid #ddd; background:#fff; font-weight:700; }
   .ui-pill.active { border-color:#0ea5e9; box-shadow:0 0 0 2px rgba(14,165,233,.15); }
 
-  .ui-text { width:100%; height:44px; border:1px solid #ddd; border-radius:10px; padding:10px; font-size:16px; }
-  .ui-textarea { width:100%; min-height:88px; border:1px solid #ddd; border-radius:12px; padding:10px; font-size:16px; }
+  .ui-text { width:100%; height:48px; border:1px solid #ddd; border-radius:12px; padding:10px; font-size:16px; }
+  .ui-textarea { width:100%; min-height:88px; border:1px solid #ddd; border-radius:12px; padding:12px; font-size:16px; }
 
   .ui-actions { display:flex; gap:8px; flex-wrap:wrap; }
-  .ui-primary { background:#0ea5e9; color:#fff; border:none; padding:12px 16px; border-radius:12px; }
-  .ui-secondary { background:#f3f4f6; color:#111; border:none; padding:12px 16px; border-radius:12px; }
-  .ui-danger { background:#ef4444; color:#fff; border:none; padding:12px 16px; border-radius:12px; }
+  .ui-primary { background:#0ea5e9; color:#fff; border:none; padding:14px 16px; border-radius:14px; font-weight:800; }
+  .ui-secondary { background:#f3f4f6; color:#111; border:none; padding:14px 16px; border-radius:14px; font-weight:700; }
+  .ui-danger { background:#ef4444; color:#fff; border:none; padding:14px 16px; border-radius:14px; font-weight:800; }
 
   .top-row { display:grid; gap:12px; grid-template-columns: 1fr; }
   .top-row .grid2 { display:grid; gap:12px; grid-template-columns: 1fr 1fr; }
 
   .hole-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; -ms-overflow-style:none; }
   .hole-tabs::-webkit-scrollbar { display:none; }
-  .hole-pill { padding:10px 12px; border:1px solid #ddd; border-radius:999px; background:#fff; font-weight:700; min-width:52px; text-align:center; }
+  .hole-pill { padding:12px 14px; border:1px solid #ddd; border-radius:999px; background:#fff; font-weight:800; min-width:56px; text-align:center; }
   .hole-pill.active { background:#0ea5e9; color:#fff; border-color:#0ea5e9; }
+  .hole-pill.done { border-color:#16a34a; }
 
-  .sticky-bottom {
-    position: fixed; left: 0; right: 0; bottom: 0; padding: 8px 12px;
-    background: linear-gradient(180deg, rgba(248,250,252,0), rgba(248,250,252,1) 24%);
+  .sticky-top { position: sticky; top: -8px; background:#fff; z-index: 2; padding-bottom: 6px; margin-bottom: 8px; }
+
+  .kv { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-bottom:8px; }
+  .kv-item { background:#f9fafb; border:1px solid #eee; border-radius:12px; padding:10px; text-align:center; }
+  .kv-t { font-size:12px; color:#666; }
+  .kv-v { font-size:18px; font-weight:800; margin-top:4px; }
+
+  /* 퀵패드 */
+  .quickpad {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding: 10px 12px calc(10px + var(--safe));
+    background: rgba(255,255,255,.96);
+    backdrop-filter: saturate(180%) blur(6px);
     border-top: 1px solid #e5e7eb;
   }
-  .sticky-bar { max-width:760px; margin:0 auto; display:flex; gap:8px; }
-  .flex-1 { flex:1; }
+  .qp-row { max-width: 780px; margin:0 auto; display:grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap:8px; align-items:center; }
+  .qp-big { height:56px; font-size:22px; border-radius:14px; border:1px solid #ddd; background:#fff; font-weight:900; }
+  .qp-ghost { height:56px; border-radius:14px; border:1px dashed #ddd; background:#fff; font-weight:800; }
+  .qp-primary { height:56px; border:none; border-radius:14px; background:#0ea5e9; color:#fff; font-weight:900; }
+  .qp-pill { height:56px; border-radius:999px; border:1px solid #ddd; background:#fff; font-weight:800; }
+  .qp-pill.active { border-color:#0ea5e9; box-shadow:0 0 0 2px rgba(14,165,233,.15); }
 
   .summary { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; }
-  .summary .box { background:#fff; border:1px solid #eee; border-radius:12px; padding:10px; text-align:center; }
+  .summary .box { background:#fff; border:1px solid #eee; border-radius:12px; padding:12px; text-align:center; }
   .summary .t { font-size:12px; color:#666; }
   .summary .v { font-size:18px; font-weight:800; margin-top:4px; }
-
-  .hole-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; gap:12px; }
-  .hole-title { font-size:16px; font-weight:800; }
-  .hole-par { display:flex; align-items:center; gap:8px; }
-  .shot-item { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:10px; }
-  .shot-row { display:flex; gap:8px; align-items:center; }
-  .shot-row input, .shot-row select { flex:1; height:44px; border:1px solid #ddd; border-radius:10px; padding:10px; font-size:16px; }
   `;
 
   // 상태
-  const [date, setDate] = useState(todayStr);
+  const [date, setDate] = useState(() => todayStr());
   const [course, setCourse] = useState('아시아나CC');
   const [holes, setHoles] = useState(createInitialHoles);
   const [active, setActive] = useState(0);
   const [savedAt, setSavedAt] = useState(null);
+  const hasAppliedPresetRef = useRef(false);
 
-  // 초기 복구
+  // 복구
   useEffect(() => {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return;
@@ -287,7 +296,7 @@ export default function UISandbox() {
     } catch(e) {/* ignore */}
   }, []);
 
-  // 즉시 저장
+  // 저장
   const persist = useCallback((nextHoles = holes, nextDate = date, nextCourse = course) => {
     localStorage.setItem(LS_KEY, JSON.stringify({ date: nextDate, course: nextCourse, holes: nextHoles }));
     setSavedAt(new Date());
@@ -308,6 +317,27 @@ export default function UISandbox() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [persist]);
 
+  // 아시아나 PAR 자동/수동 적용
+  const applyParPreset = useCallback((name) => {
+    const arr = COURSE_PRESETS[name];
+    if (!arr || arr.length !== 18) return false;
+    const next = holes.map((h, i) => ({ ...h, par: Number(arr[i]) }));
+    setHoles(next);
+    persist(next, date, course);
+    setSavedAt(new Date());
+    return true;
+  }, [holes, persist, date, course]);
+
+  useEffect(() => {
+    if (hasAppliedPresetRef.current) return;
+    if (course === '아시아나CC') {
+      const allDefault = holes.every(h => h.par == null || Number(h.par) === 4);
+      if (allDefault) {
+        if (applyParPreset('아시아나CC')) hasAppliedPresetRef.current = true;
+      }
+    }
+  }, [course, holes, applyParPreset]);
+
   // 합계/비율
   const summary = useMemo(() => {
     const totalRel = holes.reduce((s, h) => s + (Number(h.score) || 0), 0);
@@ -325,10 +355,12 @@ export default function UISandbox() {
   const resetAll = () => {
     if (!window.confirm('모든 입력을 초기화할까요?')) return;
     const init = createInitialHoles();
+    const d = todayStr();
     setHoles(init);
     setCourse('아시아나CC');
-    setDate(todayStr());
-    persist(init, todayStr(), '아시아나CC');
+    setDate(d);
+    persist(init, d, '아시아나CC');
+    hasAppliedPresetRef.current = false;
   };
 
   const copyJSON = async () => {
@@ -368,15 +400,55 @@ export default function UISandbox() {
   const gotoPrev = () => setActive(a => Math.max(0, a - 1));
   const gotoNext = () => setActive(a => Math.min(17, a + 1));
 
+  // 스와이프 제스처
+  const touchRef = useRef({ x: 0, t: 0 });
+  const onTouchStart = (e) => {
+    touchRef.current = { x: e.changedTouches[0].clientX, t: Date.now() };
+  };
+  const onTouchEnd = (e) => {
+    const dx = e.changedTouches[0].clientX - touchRef.current.x;
+    const dt = Date.now() - touchRef.current.t;
+    if (dt < 600 && Math.abs(dx) > 60) {
+      if (dx < 0) gotoNext(); else gotoPrev();
+    }
+  };
+
+  // 퀵패드 조작
+  const bumpScore = (delta) => {
+    const h = holes[active];
+    updateHole(active, { ...h, score: clamp((h.score ?? 0) + delta, -5, 10) });
+  };
+  const bumpPutts = (delta) => {
+    const h = holes[active];
+    updateHole(active, { ...h, putts: clamp((h.putts ?? 0) + delta, 0, 10) });
+  };
+  const toggleFIR = () => {
+    const h = holes[active];
+    const next = h.fir === true ? false : h.fir === false ? null : true; // true -> false -> null
+    updateHole(active, { ...h, fir: next });
+  };
+  const toggleGIR = () => {
+    const h = holes[active];
+    const next = h.gir === true ? false : h.gir === false ? null : true;
+    updateHole(active, { ...h, gir: next });
+  };
+
+  // 롱프레스 핸들러
+  const holdDecScore = useHold(() => bumpScore(-1), [holes, active]);
+  const holdIncScore = useHold(() => bumpScore(+1), [holes, active]);
+  const holdDecPutts = useHold(() => bumpPutts(-1), [holes, active]);
+  const holdIncPutts = useHold(() => bumpPutts(+1), [holes, active]);
+
   // 렌더
   const activeHole = holes[active];
+  const activeDone = (h) => (h.putts ?? 0) > 0 || h.fir != null || h.gir != null || (h.score ?? 0) !== 0;
 
   return (
-    <div className="wrap">
+    <div className="wrap" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <style>{styles}</style>
 
-      <h1>⛳ UI 샌드박스(18H)</h1>
-      <div className="sub">{savedAt ? `저장됨: ${savedAt.toLocaleTimeString()}` : '입력 시 자동 저장'}</div>
+      <h1>⛳ 라운드 입력(모바일 최적화)</h1>
+      <div className="sub">{savedAt ? `저장됨: ${savedAt.toLocaleTimeString()}` : '입력 즉시 저장'}</div>
 
       <div className="stack" style={{marginBottom:12}}>
         <div className="ui-card">
@@ -422,6 +494,7 @@ export default function UISandbox() {
             </div>
 
             <div className="ui-actions">
+              <button className="ui-secondary" onClick={() => applyParPreset(course)}>코스 파 불러오기</button>
               <button className="ui-primary" onClick={shareJSON}>공유/내보내기</button>
               <button className="ui-secondary" onClick={copyJSON}>JSON 복사</button>
               <button className="ui-danger" onClick={resetAll}>초기화</button>
@@ -433,7 +506,7 @@ export default function UISandbox() {
               {holes.map((h, i) => (
                 <button
                   key={i}
-                  className={`hole-pill ${i === active ? 'active' : ''}`}
+                  className={`hole-pill ${i === active ? 'active' : ''} ${activeDone(h) ? 'done' : ''}`}
                   onClick={() => setActive(i)}
                 >
                   {h.hole_number}H
@@ -443,18 +516,26 @@ export default function UISandbox() {
           </div>
         </div>
 
-        {/* 활성 홀 */}
+        {/* 활성 홀 상세 */}
         <HoleUnit hole={activeHole} onChange={(next) => updateHole(active, next)} />
       </div>
 
-      {/* 하단 고정 네비 */}
-      <div className="sticky-bottom">
-        <div className="sticky-bar">
-          <button className="ui-secondary" onClick={() => setActive(0)}>1H</button>
-          <button className="ui-secondary" onClick={() => setActive(8)}>9H</button>
-          <button className="ui-secondary" onClick={() => setActive(17)}>18H</button>
-          <button className="ui-secondary flex-1" onClick={gotoPrev}>◀ 이전 홀</button>
-          <button className="ui-primary flex-1" onClick={gotoNext}>다음 홀 ▶</button>
+      {/* 하단 퀵패드 (큰 버튼, 한 손 조작) */}
+      <div className="quickpad">
+        <div className="qp-row">
+          {/* 스코어 */}
+          <button className="qp-big" {...holdDecScore} onClick={() => bumpScore(-1)}>−</button>
+          <button className="qp-pill" onClick={toggleFIR} style={{fontWeight:900}}>{activeHole.fir ? 'FIR ✓' : (activeHole.fir === false ? 'FIR ✗' : 'FIR •')}</button>
+          <button className="qp-primary" onClick={gotoPrev}>◀ 이전</button>
+          <button className="qp-primary" onClick={gotoNext}>다음 ▶</button>
+          <button className="qp-big" {...holdIncScore} onClick={() => bumpScore(+1)}>＋</button>
+
+          {/* 퍼팅 */}
+          <button className="qp-big" {...holdDecPutts} onClick={() => bumpPutts(-1)}>−</button>
+          <div className="qp-ghost" style={{display:'grid', placeItems:'center'}}>{`퍼팅 ${activeHole.putts ?? 0}`}</div>
+          <button className="qp-pill" onClick={toggleGIR} style={{fontWeight:900}}>{activeHole.gir ? 'GIR ✓' : (activeHole.gir === false ? 'GIR ✗' : 'GIR •')}</button>
+          <div className="qp-ghost" style={{display:'grid', placeItems:'center'}}>{`스코어 ${signLabel(activeHole.score ?? 0)}`}</div>
+          <button className="qp-big" {...holdIncPutts} onClick={() => bumpPutts(+1)}>＋</button>
         </div>
       </div>
     </div>
