@@ -1,0 +1,126 @@
+/* ===== 레이아웃/애니메이션 변수 ===== */
+:root{
+  --left-w-open: 780px;
+  --left-w-collapsed-max: 780px;
+
+  /* 페이지 패딩 & 상단 고정바 높이(없으면 0) */
+  --page-pad: 16px;
+  --topbar-h: 56px;
+
+  /* 패널 스크롤 상한(뷰포트 기준) */
+  --panel-max-h: calc(100svh - var(--topbar-h) - (var(--page-pad) * 2));
+
+  /* 느리고 쫀쫀한 모션 (폭 전환에만 사용) */
+  --anim-slow: 600ms cubic-bezier(.22,1,.36,1);
+  --anim-fast: 420ms cubic-bezier(.22,1,.36,1);
+}
+
+/* 컨테이너 */
+.round-mdp { max-width: 1400px; margin: 0 auto; padding: var(--page-pad); }
+.round-mdp.stack { display: block; height: auto; overflow: visible; }
+
+/* ✅ 문서 스크롤 허용: 더 이상 고정 높이/hidden 사용 X */
+.round-mdp.split {
+  display: flex;
+  align-items: flex-start;  /* 자식 높이 자동 */
+  gap: 16px;
+  height: auto;             /* ⬅ 고정 해제 */
+  overflow: visible;        /* ⬅ 바깥 스크롤 허용 */
+}
+
+/* 좌/우 칼럼 */
+.left, .right {
+  height: auto;             /* ⬅ 고정 해제 */
+  min-height: 0;
+}
+
+/* ===== 왼쪽: 폭 애니메이션 + 내부 스크롤 ===== */
+.left {
+  flex: 0 0 var(--left-w-open);
+  display: flex;
+  flex-direction: column;
+  transition: flex-basis var(--anim-slow), margin var(--anim-slow);
+  background: #fff; border:1px solid #eee; border-radius:12px; padding:12px;
+}
+
+/* 툴바는 좌측 내부 스크롤 기준 sticky */
+.left .toolbar {
+  position: sticky; top: 0; z-index: 2;
+  background:#fff;
+  padding-bottom: 8px; margin-bottom: 8px; border-bottom:1px solid #f1f5f9;
+  display:flex; flex-wrap:wrap; gap:8px;
+}
+.left .toolbar input, .left .toolbar select { padding:8px 10px; border:1px solid #e5e7eb; border-radius:10px; }
+.left .toolbar .primary { padding:8px 12px; border:0; border-radius:10px; background:#2563eb; color:#fff; }
+
+/* 왼쪽 스크롤 컨테이너 */
+.left .left-scroll{
+  /* flex:1;  ← 부모 높이를 고정하지 않으므로 굳이 필요없음 */
+  max-height: var(--panel-max-h);  /* ✅ 뷰포트 기준 스크롤 상한 */
+  overflow-y: auto;
+  padding-right: 6px;
+  overscroll-behavior: contain;    /* 체이닝은 JS 훅이 처리 → 바운스 방지 */
+  scrollbar-gutter: stable both-edges;
+}
+.left .left-scroll::-webkit-scrollbar{ width:8px; }
+.left .left-scroll::-webkit-scrollbar-thumb{ background:#e5e7eb; border-radius:8px; }
+
+/* 리스트/그리드 */
+.left .list { display:flex; flex-direction:column; gap:10px; }
+.left .grid { display:grid; gap:10px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+
+/* ===== 오른쪽: 폭 애니메이션 + 내부 스크롤 ===== */
+.right {
+  flex: 1 1 auto;
+  max-width: 100%;
+  overflow: visible;                    /* ⬅ 내부 스크롤 박스가 담당 */
+  transition: max-width var(--anim-fast);
+  display: flex; flex-direction: column;
+}
+
+/* 오른쪽 스크롤 컨테이너 */
+.right .right-scroll{
+  max-height: var(--panel-max-h);       /* ✅ 뷰포트 기준 스크롤 상한 */
+  overflow-y: auto;
+  padding-right: 6px;
+  overscroll-behavior: contain;         /* 체이닝은 JS 훅이 처리 */
+  scrollbar-gutter: stable both-edges;
+}
+
+/* 콘텐츠 애니메이션은 Framer Motion이 담당 */
+.right .right-pane{ height: 100%; }
+
+/* 접힘 상태: 왼쪽만 가운데, 오른쪽 0 */
+.round-mdp.split.collapsed { gap: 8px; }
+.round-mdp.split.collapsed .left {
+  flex-basis: min(100%, var(--left-w-collapsed-max));
+  margin: 0 auto; /* 가운데 정렬 */
+}
+.round-mdp.split.collapsed .right { max-width: 0; }
+
+/* 열림 상태: 왼쪽 좁히고, 오른쪽 확장 */
+.round-mdp.split.detail-open .left { flex-basis: var(--left-w-open); margin: 0; }
+.round-mdp.split.detail-open .right { max-width: 100%; }
+
+/* 나머지 */
+.right .placeholder { color:#6b7280; padding:24px; border:1px solid #eee; border-radius:12px; background:#fff; }
+.empty { background:#fff; border:1px dashed #e5e7eb; border-radius:12px; padding:24px; text-align:center; }
+.empty .primary { margin-top:8px; padding:8px 12px; border:0; border-radius:10px; background:#2563eb; color:#fff; }
+button.primary { background:#2563eb; color:#fff; border:none; }
+button { border:1px solid #e5e7eb; background:#fff; border-radius:10px; padding:8px 12px; cursor:pointer; }
+button:disabled { opacity:.6; cursor:not-allowed; }
+
+/* RoundDetailPanel 내 X 버튼 */
+.detail-panel{ position: relative; }
+.detail-panel .close-btn{
+  position: absolute; top: 8px; right: 8px;
+  width: 32px; height: 32px; border: 1px solid #e5e7eb; border-radius: 8px;
+  background: #fff; font-size: 18px; line-height: 1; cursor: pointer;
+  transition: transform 160ms ease;
+}
+.detail-panel .close-btn:hover{ background:#f9fafb; transform: scale(1.03); }
+
+/* 접근성: 모션 최소화 선호 시 애니메이션 제거 */
+@media (prefers-reduced-motion: reduce){
+  .left, .right, .right .right-pane { transition: none !important; }
+}

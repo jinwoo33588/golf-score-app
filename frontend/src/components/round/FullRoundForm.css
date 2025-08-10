@@ -1,0 +1,177 @@
+/* ──────────────────────────────────────────────────── */
+/* 전체 컨테이너: 홀 단위 폼을 세로로 쭉 나열        */
+/* ──────────────────────────────────────────────────── */
+.full-round-form {
+  display: flex;               /* 세로로 쌓기 위해 flex 컨테이너 */
+  flex-direction: column;      /* 컬럼 축을 따라 쌓기 */
+  gap: 1rem;                   /* 홀 간격 */
+}
+
+/* ──────────────────────────────────────────────────── */
+/* 제목 스타일: “🏁 라운드 종료 후 입력 (18홀 전체)”   */
+/* ──────────────────────────────────────────────────── */
+.full-round-form h1 {
+  font-size: 1.25rem;          /* 글자 크기 */
+  font-weight: 700;            /* 볼드체 */
+  margin-bottom: 0.5rem;       /* 아래 여백 */
+}
+
+/* ──────────────────────────────────────────────────── */
+/* 각 홀(Row) 컨테이너                              */
+/* ──────────────────────────────────────────────────── */
+.full-round-form .hole-row {
+  display: flex;
+  flex-direction: column;      /* 내부에 Header+샷 리스트 세로 배치 */
+  border-bottom: 1px solid #e5e7eb; /* 구분선 */
+  padding-bottom: 1rem;        /* 내부 여백 */
+  gap: 0.75rem;                /* 헤더와 샷 리스트 간격 */
+}
+
+/* ──────────────────────────────────────────────────── */
+/* Score & Putts container */
+.score-putts-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Score control styles */
+.score-control, .putts-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.score-control button, .putts-control button {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background-color: #ffffff;
+  color: #2563eb;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  border: #2563eb 1px solid;
+}
+.score-control span, .putts-control span {
+  min-width: 2rem;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.full-round-form .score-control button:disabled,
+.full-round-form .putts-control button:disabled {
+  opacity: 0.5;                   /* 반투명 처리 */
+  color: #1e4bb8;                 /* 연한 회색 글자 */
+  border-color: #1e4bb8;          /* 연한 회색 테두리 */
+  cursor: not-allowed;            /* 금지 커서 */
+}
+
+/* Optional: Hover effect for buttons */
+.score-control button:hover, .putts-control button:hover {
+  background-color: #1e4bb8;
+  color: #fff;
+}
+
+
+/* ──────────────────────────────────────────────────── */
+/* 홀 헤더(점수/퍼팅/FIR/GIR/벌타 + 버튼)              */
+/* ──────────────────────────────────────────────────── */
+.full-round-form .hole-header {
+  display: flex;               /* 한 줄에 쭉 배치 */
+  align-items: center;         /* 수직 가운데 정렬 */
+  gap: 1rem;                   /* 요소 간 가로 간격 */
+}
+
+/* 홀 번호 & Par 표시                                */
+.full-round-form .hole-header .hole-number {
+  width: 6rem;                 /* 고정 너비 */
+  font-weight: 600;            /* 강조 */
+}
+
+/* 점수·퍼팅 입력, 셀렉트 박스, 체크박스 레이블         */
+.full-round-form .hole-header input[type="number"],
+.full-round-form .hole-header select,
+.full-round-form .hole-header label {
+  font-size: 0.875rem;         /* 약간 작은 글자 */
+}
+
+/* 인풋/셀렉트 공통 스타일                            */
+.full-round-form .hole-header input,
+.full-round-form .hole-header select {
+  width: 4rem;                 /* 고정 너비 */
+  padding: 0.25rem 0.5rem;     /* 내부 여백 */
+  border: 1px solid #d1d5db;   /* 테두리 색 */
+  border-radius: 0.375rem;     /* 둥근 모서리 */
+}
+
+/* 체크박스 + 레이블 묶음                           */
+.full-round-form .hole-header label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ──────────────────────────────────────────────────── */
+/* “+ 샷 추가” 버튼: 기본 숨김, hover 시 나타나게      */
+/* ──────────────────────────────────────────────────── */
+/* (옵션) hover 효과가 필요하면 아래 두 줄을 추가하세요. */
+
+.full-round-form .hole-row .add-shot-btn {
+  display: none;
+}
+.full-round-form .hole-row:hover .add-shot-btn {
+  display: inline-block;
+}
+
+
+/* 버튼을 오른쪽 끝으로 밀어내기 */
+.full-round-form .hole-header .add-shot-btn {
+  margin-left: auto;          /* 앞 요소들과 최대 간격 확보 → 우측 정렬 */
+  font-size: 0.875rem;
+  color: #3b82f6;
+  background: none;
+  border: 1px solid #3b82f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+/* ──────────────────────────────────────────────────── */
+/* 샷 리스트(샷이 들어가는 영역)                      */
+/* ──────────────────────────────────────────────────── */
+.full-round-form .shots-list {
+  margin-left: 4rem;            /* 헤더 왼쪽 요소들 너비만큼 들여쓰기 */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* 각 샷 아이템(클럽/조건/거리/결과/메모 + 삭제 버튼)   */
+/* 배경, 패딩, 둥근 모서리 적용                         */
+.full-round-form .shot-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  background: #f9fafb;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+/* 샷 내 입력·셀렉트 공통 스타일                        */
+.full-round-form .shot-item select,
+.full-round-form .shot-item input {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+/* 샷 삭제 버튼                                         */
+.full-round-form .shot-item .remove-shot {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}

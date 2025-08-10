@@ -1,0 +1,28 @@
+/* src/components/HoleEditRow.css */
+.her-row {
+  border: 1px solid #eee; border-radius: 12px; padding: 12px; background: #fff;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.her-head { display: flex; gap: 12px; align-items: baseline; }
+.her-hole { font-weight: 800; font-size: 18px; }
+.her-par  { color: #777; }
+
+.her-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.her-field { display: flex; flex-direction: column; gap: 4px; }
+.her-field.chk { flex-direction: row; align-items: center; gap: 6px; }
+.her-field.span2 { grid-column: span 2; }
+
+.her-input {
+  border: 1px solid #ddd; border-radius: 8px; padding: 8px; background: #fff;
+}
+.her-input.num { text-align: right; }
+
+/* 모바일 */
+@media (max-width: 640px) {
+  .her-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .her-field.span2 { grid-column: span 2; }
+}

@@ -1,0 +1,104 @@
+.page-container {
+  padding: 1.5rem;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+.page-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+/* .page-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+.page-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+} */
+
+/* 날짜+코스 영역 */
+.selector-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.scorecard-wrapper {
+  /* 위아래 간격 */
+  margin: 1rem 0;
+  /* 좌우 가운데 정렬 (원하는 대로 조정) */
+  display: flex;
+  justify-content: center;
+  /* 축소/확대해도 레이아웃을 깨지 않도록 최대 넓이 설정 */
+  max-width: 100%;
+}
+
+/* 예: 스코어카드를 좌측 붙이고 싶으면 이렇게 */
+.scorecard-wrapper.left {
+  justify-content: flex-start;
+}
+
+/* 뷰 모드 버튼 */
+.viewmode-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.viewmode-buttons button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+.viewmode-buttons button.active {
+  background: #6cbf84;
+  color: white;
+  border-color: #6cbf84;
+}
+
+/* 저장 버튼 */
+.save-button-wrapper {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+.save-button-wrapper button {
+  padding: 0.75rem 2rem;
+  background: #26a69a;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+.save-button-wrapper button:hover {
+  background: #2bbbad;
+}
+
+/* “확인” 버튼 */
+.confirm-button {
+  padding: 0.5rem 1.25rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  height: fit-content;
+}
+.confirm-button:disabled {
+  background: #a5b4fc;
+  cursor: not-allowed;
+}
+
+/* 안내 텍스트 */
+.info-text {
+  text-align: center;
+  color: #555;
+  margin-top: 1rem;
+}

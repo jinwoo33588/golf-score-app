@@ -1,0 +1,85 @@
+/* 카드 컨테이너 */
+.rdp-hole {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+/* 헤더 */
+.hole-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.hole-left { display: flex; align-items: baseline; gap: 12px; }
+.hole-num { font-size: 20px; font-weight: 800; }
+.hole-meta { color: #777; }
+
+/* ✅ 홀 요약 카드: Score / FIR / GIR / Putts = 4칸 */
+.hole-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+
+.stat-card {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+  text-align: center;
+}
+
+.chip-title {
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+.chip-value {
+  font-size: 18px;
+  font-weight: 800;
+}
+.chip-value.good { color: #2e7d32; } /* 언더파 */
+.chip-value.bad  { color: #c62828; } /* 오버파 */
+.stat-card.score .chip-value { font-size: 22px; }
+
+/* FIR/GIR 토글 색상 */
+.stat-card.toggle.ok {
+  background: #ecf9f0;
+  border-color: #d3f0dc;
+  color: #1b5e20;
+}
+.stat-card.toggle.no {
+  background: #fff5f5;
+  border-color: #ffe0e0;
+  color: #b00020;
+}
+
+/* 샷 리스트 */
+.shots { display: flex; flex-direction: column; gap: 8px; }
+.no-shots { color: #888; font-size: 13px; }
+
+.shot-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border-top: 1px dashed #eee;
+  padding-top: 8px;
+}
+.shot-num { font-weight: 700; width: 36px; text-align: right; }
+.shot-main { flex: 1; }
+.shot-line { display: flex; gap: 10px; align-items: baseline; }
+.shot-sub { display: flex; gap: 12px; color: #666; font-size: 12px; margin-top: 2px; }
+
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.muted { color: #777; }
+.note { color: #444; }
+
+/* 반응형 */
+@media (max-width: 600px) {
+  .hole-stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

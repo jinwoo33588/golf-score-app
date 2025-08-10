@@ -1,10 +1,10 @@
-const { createShots, getShotsByHole } = require('../models/shotModel');
+const {
+  createShots,
+  getShotsByHole
+} = require('../models/shotModel');
 
 exports.createShotsHandler = async (req, res, next) => {
   try {
-    console.log('▶ createShotsHandler params:', req.params, 'body:', req.body);
-
-    // 1) API 사용 패턴에 맞춰, 배열로 들어올 수도/단일로 들어올 수도 처리
     const shotsArray = Array.isArray(req.body.shots)
       ? req.body.shots
       : [req.body];
@@ -12,16 +12,16 @@ exports.createShotsHandler = async (req, res, next) => {
     const inserted = await createShots(
       Number(req.params.holeId),
       shotsArray.map(s => ({
-        shot_number:    Number(s.shot_number),
-        club:           s.club           || '-',
-        start_location: s.start_location || '-',
-        end_location:   s.end_location   || '-',
-        distance:       s.distance != null ? Number(s.distance) : null,
-        result:         s.result         || '-',
-        lie:            s.lie            || '-',
-        notes:          s.notes || null
+        shot_number:   s.shot_number,
+        club:          s.club,
+        condition:     s.condition,
+        remaining_dist:s.remaining_dist,
+        actual_dist:   s.actual_dist,
+        result:        s.result,
+        notes:         s.notes
       }))
     );
+
     res.status(201).json({ inserted });
   } catch (err) {
     console.error('❌ createShotsHandler error:', err);

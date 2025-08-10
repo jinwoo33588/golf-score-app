@@ -1,35 +1,33 @@
 // src/hooks/useStats.js
-import { useState, useEffect } from 'react';
-import * as statsService from '../services/statsService';
+import { useEffect, useState } from 'react';
+import * as statsAPI from '../services/statsService';
 
 export default function useStats() {
-  const [clubStats, setClubStats] = useState([]);
-  const [holeStats, setHoleStats] = useState([]);
-  const [courseStats, setCourseStats] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const fetchStats = async () => {
-    setLoading(true);
-    try {
-      const [clubs, holes, courses] = await Promise.all([
-        statsService.getClubStats(),
-        statsService.getHoleStats(),
-        statsService.getCourseStats(),
-      ]);
-      setClubStats(clubs);
-      setHoleStats(holes);
-      setCourseStats(courses);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [summary, setSummary] = useState(null);
+  const [byCourse, setByCourse] = useState([]);
+  const [trend, setTrend] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
 
   useEffect(() => {
-    fetchStats();
+    (async () => {
+      try {
+        setLoading(true);
+        const [s, c, t] = await Promise.all([
+          statsAPI.getSummary(),
+          statsAPI.getByCourse(),
+          statsAPI.getTrend(),
+        ]);
+        setSummary(s);
+        setByCourse(c);
+        setTrend(t);
+      } catch (e) {
+        setError(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  return { clubStats, holeStats, courseStats, loading, error, fetchStats };
+  return { summary, byCourse, trend, loading, error };
 }

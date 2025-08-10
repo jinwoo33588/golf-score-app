@@ -25,15 +25,15 @@ CREATE TABLE holes (
 
 
 CREATE TABLE shots (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  hole_id INT NOT NULL,
-  shot_number INT NOT NULL,
-  club VARCHAR(50) DEFAULT '-',
-  start_location VARCHAR(50) DEFAULT '-',
-  end_location VARCHAR(50) DEFAULT '-',
-  distance INT DEFAULT NULL,
-  result VARCHAR(255) DEFAULT '-',
-  lie VARCHAR(50) DEFAULT '-',
-  notes TEXT DEFAULT NULL,
-  FOREIGN KEY (hole_id) REFERENCES holes(id)
+  `id`              INT AUTO_INCREMENT PRIMARY KEY,
+  `hole_id`         INT NOT NULL,
+  `shot_number`     INT NOT NULL,
+  `club`            VARCHAR(50) DEFAULT '-',
+  `condition`       VARCHAR(50) NOT NULL,     -- 페어웨이/러프/벙커 등
+  `remaining_dist`  INT     DEFAULT NULL,     -- 남은 거리
+  `actual_dist`     INT     DEFAULT NULL,     -- 실제 친 거리
+  `result`          VARCHAR(255) DEFAULT '-', -- 샷 결과
+  `notes`           TEXT    DEFAULT NULL,     -- 메모
+  FOREIGN KEY (`hole_id`) REFERENCES `holes`(`id`)
 );
+

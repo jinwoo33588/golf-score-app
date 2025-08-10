@@ -1,0 +1,25 @@
+/* src/pages/RoundEditPage.css */
+.rep-container { max-width: 960px; margin: 0 auto; padding: 16px; background: #fafafa; }
+.rep-status { padding: 24px; text-align: center; }
+.rep-status.error { color: #b00020; }
+
+.rep-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.rep-header h1 { margin: 0; font-size: 22px; }
+.rep-spacer { flex: 1; }
+
+.rep-btn { padding: 8px 12px; border: 1px solid #ddd; background: #fff; border-radius: 8px; cursor: pointer; }
+.rep-btn:hover { background: #f6f6f6; }
+.rep-btn.primary { background: #0f62fe; border-color: #0f62fe; color: #fff; }
+.rep-btn.ghost { border: none; background: transparent; color: #333; }
+
+.rep-card { border: 1px solid #eee; border-radius: 12px; padding: 12px; background: #fff; margin-bottom: 16px; }
+.rep-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.rep-field { display: flex; flex-direction: column; gap: 4px; }
+.rep-input { border: 1px solid #ddd; border-radius: 8px; padding: 8px; background: #fff; }
+
+.rep-holes { display: flex; flex-direction: column; gap: 12px; }
+
+/* 모바일 */
+@media (max-width: 640px) {
+  .rep-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+}

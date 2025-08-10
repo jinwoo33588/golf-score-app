@@ -10,26 +10,6 @@ async function createRound(userId, courseName, date, weather = '-') {
   return result.insertId;  // 새로 생긴 round.id
 }
 
-// 특정 유저의 모든 라운드 가져오기
-async function getRoundsByUser(userId) {
-  const [rows] = await pool.query(
-    `SELECT * FROM rounds
-     WHERE user_id = ?
-     ORDER BY date DESC`,
-    [userId]
-  );
-  return rows;
-}
-
-// 라운드 상세 (하나만)
-async function getRoundById(roundId) {
-  const [rows] = await pool.query(
-    `SELECT * FROM rounds WHERE id = ?`,
-    [roundId]
-  );
-  return rows[0] || null;
-}
-
 // 라운드 삭제 (연관된 holes, shots도 cascade로 삭제)
 async function deleteRound(roundId) {
   // shots → holes → rounds 순서로 지워야 FK 제약에 걸리지 않아요
@@ -48,6 +28,26 @@ async function deleteRound(roundId) {
     [roundId]
   );
   return result.affectedRows;  // 삭제된 행 수
+}
+
+// 특정 유저의 모든 라운드 가져오기
+async function getRoundsByUser(userId) {
+  const [rows] = await pool.query(
+    `SELECT * FROM rounds
+     WHERE user_id = ?
+     ORDER BY date DESC`,
+    [userId]
+  );
+  return rows;
+}
+
+// 라운드 상세 (하나만)
+async function getRoundById(roundId) {
+  const [rows] = await pool.query(
+    `SELECT * FROM rounds WHERE id = ?`,
+    [roundId]
+  );
+  return rows[0] || null;
 }
 
 /**
@@ -86,6 +86,7 @@ async function getRoundsByUserWithStats(userId) {
        r.date,
        r.weather,
        COALESCE(SUM(h.score),0)     AS totalScore,
+       COALESCE(SUM(h.putts),0)     AS totalPutts,
        ROUND(COALESCE(AVG(h.fw_hit)*100,0),0) AS firPercent,
        ROUND(COALESCE(AVG(h.gir)*100,0),0)    AS girPercent
      FROM rounds r

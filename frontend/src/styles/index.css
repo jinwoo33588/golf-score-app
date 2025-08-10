@@ -2,10 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-header {
+html, body { height: auto; overflow-y: auto; }
+#root, #app { min-height: 100%; }
+
+.app-header {
   /* (선택) 모든 header 태그를 상단에 sticky */
   position: -webkit-sticky;
   position: sticky;
   top: 0;
   z-index: 999;
+}
+
+.container {
+  padding: 1.5rem;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
 }

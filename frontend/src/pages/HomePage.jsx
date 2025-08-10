@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react';
+import React from 'react'
 import RoundCard from '../components/RoundCard';
 import StatBox from '../components/StatBox';
 import { useNavigate } from 'react-router-dom';
@@ -38,7 +39,7 @@ const HomePage = () => {
 
 
   return (
-    <div className="home-container">
+    <div className="container">
       <h1 className="home-title">⛳ 내 골프 라운드 기록</h1>
 
       <div className="stat-boxes">

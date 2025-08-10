@@ -1,0 +1,19 @@
+.scorecard {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(2, 2.5rem);
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.scorecell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}

@@ -1,73 +1,107 @@
-// src/pages/RoundDetailPage.jsx
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useRoundDetail from '../hooks/useRoundDetail';
-
+import HoleCard from '../components/HoleCard'; // ✅ 추가
 import './RoundDetailPage.css';
 
 export default function RoundDetailPage() {
-  const { roundId } = useParams();  // URL param 이름과 일치시킵니다
+  const { roundId } = useParams();
   const navigate = useNavigate();
   const { round, loading, error, deleteRound } = useRoundDetail(roundId);
 
-  if (loading) return <div>로딩중.</div>;
-  if (error)   return <div>⚠️ 로드 실패: {error.message}</div>;
-  if (!round) return <div>데이터가 없습니다.</div>;
+  const holes = round?.holes ?? [];
 
-  const onDelete = async () => {
-    if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    await deleteRound();
-    navigate('/rounds');
+  const handleDelete = async () => {
+    if (!window.confirm('정말 이 라운드를 삭제할까요?')) return;
+    try {
+      await deleteRound();
+      navigate('/rounds');
+    } catch {
+      alert('삭제 중 오류가 발생했습니다.');
+    }
   };
 
+  const handleEdit = () => {
+    navigate(`/rounds/${roundId}/edit`);
+  };
+
+  if (loading) return <div className="rdp-status">로딩중…</div>;
+  if (error)   return <div className="rdp-status error">⚠️ {error.message || '로드 실패'}</div>;
+  if (!round)  return <div className="rdp-status">데이터가 없습니다.</div>;
+
+  // 총 타수(실타수) = Σ(par + score)
+  const totalStrokes = (() => {
+    if (!holes.length) return null;
+    let sum = 0;
+    for (const h of holes) {
+      if (typeof h.par !== 'number' || typeof h.score !== 'number') return null;
+      sum += Number(h.par) + Number(h.score);
+    }
+    return sum;
+  })();
+
+  const totalScoreSigned =
+    typeof round.totalScore === 'number'
+      ? (round.totalScore > 0 ? `+${round.totalScore}` : `${round.totalScore}`)
+      : null;
+
+  const totalClass =
+    typeof round.totalScore === 'number'
+      ? round.totalScore < 0
+        ? 'good'
+        : round.totalScore > 0
+        ? 'bad'
+        : ''
+      : '';
+
   return (
-    <div className="round-detail-container">
-      <h1 className="round-detail-title">⛳ 라운드 상세</h1>
-
-      <div className="round-detail-actions">
-        <button className="delete-btn" onClick={onDelete}>
-          🗑 삭제
-        </button>
+    <div className="rdp-container">
+      {/* 헤더 */}
+      <div className="rdp-header">
+        <button className="rdp-btn ghost" onClick={() => navigate(-1)}>← 뒤로</button>
+        <div className="rdp-title">
+          <h1>⛳ {round.course_name}</h1>
+          <div className="rdp-subtitle">
+            <span>{round.date?.slice(0, 10) || '-'}</span>
+            <span className="divider">·</span>
+            <span>날씨: {round.weather || '-'}</span>
+          </div>
+        </div>
+        <div className="rdp-actions">
+          <button className="rdp-btn" onClick={handleEdit}>수정</button>
+          <button className="rdp-btn danger" onClick={handleDelete}>삭제</button>
+        </div>
       </div>
 
-      <div className="round-detail-summary">
-        <p><strong>날짜:</strong> {round.date}</p>
-        <p><strong>코스명:</strong> {round.course}</p>
-        <p><strong>총 스코어:</strong> {round.score}</p>
-        <p><strong>FIR:</strong> {round.fir}%</p>
-        <p><strong>GIR:</strong> {round.gir}%</p>
-        <p><strong>퍼팅 수:</strong> {round.totalPutts}</p>
+      {/* 라운드 요약 통계 */}
+      <div className="rdp-stats">
+        <div className="rdp-stat">
+          <div className="label">총 스코어</div>
+          <div className={`value ${totalClass}`}>
+            {totalStrokes ?? '-'}
+            {totalScoreSigned != null && ` (${totalScoreSigned})`}
+          </div>
+        </div>
+        <div className="rdp-stat">
+          <div className="label">퍼팅 합계</div>
+          <div className="value">{round.totalPutts ?? '-'}</div>
+        </div>
+        <div className="rdp-stat">
+          <div className="label">FIR</div>
+          <div className="value">{round.firPercent ?? 0}%</div>
+        </div>
+        <div className="rdp-stat">
+          <div className="label">GIR</div>
+          <div className="value">{round.girPercent ?? 0}%</div>
+        </div>
       </div>
 
-      <h2 className="round-detail-subtitle">홀별 기록</h2>
-      <table className="round-detail-table">
-        <thead>
-          <tr>
-            <th>홀</th>
-            <th>파</th>
-            <th>스코어</th>
-            <th>티샷</th>
-            <th>어프로치</th>
-            <th>퍼팅</th>
-          </tr>
-        </thead>
-        <tbody>
-          {round.holes.map(h => {
-            const teeShot = h.shots?.find(s => s.shot_number === 1)?.club ?? '-';
-            const approach = h.shots?.find(s => s.shot_number === 2)?.club ?? '-';
-            return (
-              <tr key={h.id}>
-                <td>{h.hole}</td>
-                <td>{h.par}</td>
-                <td>{h.score  ?? '-'}</td>
-                <td>{h.teeShot}</td>
-                <td>{h.approach}</td>
-                <td>{h.putts ?? '-'}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      {/* 홀 목록 */}
+      <div className="rdp-holes">
+        {holes.map((h) => (
+          <HoleCard key={h.id} hole={h} />
+        ))}
+      </div>
     </div>
   );
 }
