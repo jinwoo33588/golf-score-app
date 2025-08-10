@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 
-const LS_KEY = 'uiSandbox18_v2';
+const LS_KEY = 'uiSandbox18_ios_v1';
 
 // ---------- 유틸 ----------
 const pad2 = (n) => String(n).padStart(2, '0');
@@ -16,7 +16,7 @@ const clamp = (v, min=null, max=null) => {
   return x;
 };
 
-// 초기 18홀 생성
+// 초기 18홀
 function createInitialHoles() {
   return Array.from({ length: 18 }, (_, i) => ({
     hole_number: i + 1,
@@ -34,88 +34,83 @@ function createInitialHoles() {
 // ---------- 코스 PAR 프리셋 ----------
 const COURSE_PRESETS = {
   '아시아나CC': [4, 5, 4, 3, 4, 3, 5, 3, 4,  4, 4, 5, 3, 4, 4, 5, 3, 4],
-  // 추가 코스는 여기에
 };
 
-// ---------- 공통 UI ----------
-function YesNoToggle({ label, value, onChange }) {
+// ---------- iOS 안전 단일탭 버튼 ----------
+// 터치 환경에선 onTouchEnd에서만 처리 + preventDefault로 click 무효화
+// 터치가 아닌 환경에선 onClick만 처리 → "한번 터치 = 한번만 반응"
+function useSingleTap(onTap) {
+  const touchedRef = useRef(false);
+
+  const onTouchStart = useCallback(() => {
+    touchedRef.current = true;
+  }, []);
+
+  const onTouchEnd = useCallback((e) => {
+    // iOS에서 click 발생 방지
+    e.preventDefault();
+    onTap && onTap();
+    // 짧은 시간 동안 click 무시
+    setTimeout(() => { touchedRef.current = false; }, 80);
+  }, [onTap]);
+
+  const onClick = useCallback((e) => {
+    // 터치로 이미 처리된 경우 click 무시
+    if (touchedRef.current) {
+      e.preventDefault();
+      return;
+    }
+    onTap && onTap();
+  }, [onTap]);
+
+  return { onTouchStart, onTouchEnd, onClick };
+}
+
+function TapButton({ className='', onTap, children, ...rest }) {
+  const handlers = useSingleTap(onTap);
   return (
-    <div className="ui-row">
-      <div className="ui-label">{label}</div>
-      <div className="ui-toggle">
-        <button
-          type="button"
-          className={`ui-pill ${value === true ? 'active' : ''}`}
-          onClick={() => onChange(true)}
-        >YES</button>
-        <button
-          type="button"
-          className={`ui-pill ${value === false ? 'active' : ''}`}
-          onClick={() => onChange(false)}
-        >NO</button>
-      </div>
-    </div>
+    <button
+      type="button"
+      className={className}
+      {...handlers}
+      {...rest}
+    >
+      {children}
+    </button>
   );
 }
 
+// ---------- 샷 편집(간단) ----------
 function ShotEditor({ shot, onChange, onRemove }) {
   return (
     <div className="ui-card shot-item">
       <div className="shot-row">
-        <input
-          placeholder="클럽"
-          value={shot.club || ''}
-          onChange={e => onChange('club', e.target.value)}
-        />
-        <input
-          placeholder="상태(페어웨이/러프/벙커)"
-          value={shot.condition || ''}
-          onChange={e => onChange('condition', e.target.value)}
-        />
+        <input placeholder="클럽" value={shot.club || ''} onChange={e => onChange('club', e.target.value)} />
+        <input placeholder="상태(페어웨이/러프/벙커)" value={shot.condition || ''} onChange={e => onChange('condition', e.target.value)} />
       </div>
       <div className="shot-row">
-        <input
-          placeholder="남은거리(m)"
-          inputMode="numeric"
-          value={shot.remaining_dist ?? ''}
-          onChange={e => onChange('remaining_dist', e.target.value === '' ? '' : Number(e.target.value))}
-        />
-        <input
-          placeholder="실제거리(m)"
-          inputMode="numeric"
-          value={shot.actual_dist ?? ''}
-          onChange={e => onChange('actual_dist', e.target.value === '' ? '' : Number(e.target.value))}
-        />
+        <input placeholder="남은거리(m)" inputMode="numeric" value={shot.remaining_dist ?? ''} onChange={e => onChange('remaining_dist', e.target.value === '' ? '' : Number(e.target.value))} />
+        <input placeholder="실제거리(m)" inputMode="numeric" value={shot.actual_dist ?? ''} onChange={e => onChange('actual_dist', e.target.value === '' ? '' : Number(e.target.value))} />
       </div>
       <div className="shot-row">
-        <input
-          placeholder="결과(그린우/해저드 등)"
-          value={shot.result || ''}
-          onChange={e => onChange('result', e.target.value)}
-        />
-        <input
-          placeholder="메모"
-          value={shot.notes || ''}
-          onChange={e => onChange('notes', e.target.value)}
-        />
+        <input placeholder="결과(그린우/해저드 등)" value={shot.result || ''} onChange={e => onChange('result', e.target.value)} />
+        <input placeholder="메모" value={shot.notes || ''} onChange={e => onChange('notes', e.target.value)} />
       </div>
       <div className="ui-actions">
-        <button type="button" className="ui-danger" onClick={onRemove}>샷 삭제</button>
+        <TapButton className="ui-danger" onTap={onRemove}>샷 삭제</TapButton>
       </div>
     </div>
   );
 }
 
+// ---------- 홀 카드 ----------
 function HoleUnit({ hole, onChange }) {
   const h = hole || {};
   const set = (key, val) => onChange({ ...h, [key]: val });
 
   const addShot = () => {
     const next = [...(h.shots || [])];
-    next.push({
-      club: '', condition: '', remaining_dist: '', actual_dist: '',
-      result: '', notes: ''
-    });
+    next.push({ club:'', condition:'', remaining_dist:'', actual_dist:'', result:'', notes:'' });
     set('shots', next);
   };
   const updateShot = (idx, key, val) => {
@@ -163,8 +158,23 @@ function HoleUnit({ hole, onChange }) {
         </div>
       </div>
 
-      <YesNoToggle label="FIR" value={h.fir} onChange={v => set('fir', v)} />
-      <YesNoToggle label="GIR" value={h.gir} onChange={v => set('gir', v)} />
+      <div className="ui-row">
+        <div className="ui-label">FIR</div>
+        <div className="ui-toggle">
+          <TapButton className={`ui-pill ${h.fir === true ? 'active' : ''}`} onTap={() => set('fir', true)}>YES</TapButton>
+          <TapButton className={`ui-pill ${h.fir === false ? 'active' : ''}`} onTap={() => set('fir', false)}>NO</TapButton>
+          <TapButton className={`ui-pill ${h.fir === null ? 'active' : ''}`} onTap={() => set('fir', null)}>•</TapButton>
+        </div>
+      </div>
+
+      <div className="ui-row">
+        <div className="ui-label">GIR</div>
+        <div className="ui-toggle">
+          <TapButton className={`ui-pill ${h.gir === true ? 'active' : ''}`} onTap={() => set('gir', true)}>YES</TapButton>
+          <TapButton className={`ui-pill ${h.gir === false ? 'active' : ''}`} onTap={() => set('gir', false)}>NO</TapButton>
+          <TapButton className={`ui-pill ${h.gir === null ? 'active' : ''}`} onTap={() => set('gir', null)}>•</TapButton>
+        </div>
+      </div>
 
       <div className="ui-row" style={{alignItems:'flex-start'}}>
         <div className="ui-label" style={{marginTop:8}}>노트</div>
@@ -186,65 +196,52 @@ function HoleUnit({ hole, onChange }) {
         />
       ))}
       <div className="ui-actions">
-        <button type="button" className="ui-secondary" onClick={addShot}>샷 추가</button>
+        <TapButton className="ui-secondary" onTap={addShot}>샷 추가</TapButton>
       </div>
     </div>
   );
 }
 
-// ---------- 롱프레스 훅 ----------
-function useHold(action, deps = [], speed = 110) {
-  const timer = useRef(null);
-  const start = useCallback(() => {
-    action();
-    timer.current = setInterval(action, speed);
-  }, deps); // eslint-disable-line
-  const stop = useCallback(() => {
-    if (timer.current) clearInterval(timer.current);
-    timer.current = null;
-  }, []);
-  return {
-    onMouseDown: start, onMouseUp: stop, onMouseLeave: stop,
-    onTouchStart: start, onTouchEnd: stop, onTouchCancel: stop,
-  };
-}
-
-// ---------- 메인 페이지 ----------
+// ---------- 메인 ----------
 export default function UISandbox() {
-  // 스타일(외부 CSS 없이 사용)
+  // 스타일 (iOS 사파리 최적화)
   const styles = `
-  :root { --pad:16px; --radius:16px; --safe: env(safe-area-inset-bottom); }
+  :root { --pad:16px; --radius:16px; --safe-bottom: env(safe-area-inset-bottom); }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body, #root { height:100%; }
-  body { background:#f8fafc; font-size:16px; }
-  .wrap { max-width: 780px; margin:0 auto; padding: var(--pad); padding-bottom: 120px; }
+  body { background:#f6f7fb; font-size:16px; }
+  .wrap {
+    min-height: 100dvh;
+    padding: var(--pad);
+    padding-bottom: calc(120px + var(--safe-bottom));
+    max-width: 780px; margin: 0 auto;
+  }
   h1 { font-size:22px; font-weight:800; margin: 0 0 8px; }
-  .sub { color:#666; font-size:12px; margin-bottom: 12px; }
+  .sub { color:#666; font-size:12px; margin-bottom:12px; }
 
   .ui-card { background:#fff; border:1px solid #eee; border-radius: var(--radius); padding: var(--pad); box-shadow:0 2px 8px rgba(0,0,0,.04); }
   .stack { display:grid; gap:12px; }
 
   .ui-row { display:flex; align-items:center; justify-content:space-between; margin:12px 0; gap:12px; }
-  .ui-label { font-weight:600; font-size:14px; white-space:nowrap; }
-
-  .ui-toggle { display:flex; gap:8px; }
-  .ui-pill { padding:12px 18px; border-radius:999px; border:1px solid #ddd; background:#fff; font-weight:700; }
+  .ui-label { font-weight:700; font-size:14px; white-space:nowrap; }
+  .ui-toggle { display:flex; gap:8px; flex-wrap:wrap; }
+  .ui-pill { padding:12px 18px; border-radius:999px; border:1px solid #ddd; background:#fff; font-weight:800; }
   .ui-pill.active { border-color:#0ea5e9; box-shadow:0 0 0 2px rgba(14,165,233,.15); }
 
   .ui-text { width:100%; height:48px; border:1px solid #ddd; border-radius:12px; padding:10px; font-size:16px; }
   .ui-textarea { width:100%; min-height:88px; border:1px solid #ddd; border-radius:12px; padding:12px; font-size:16px; }
 
   .ui-actions { display:flex; gap:8px; flex-wrap:wrap; }
-  .ui-primary { background:#0ea5e9; color:#fff; border:none; padding:14px 16px; border-radius:14px; font-weight:800; }
-  .ui-secondary { background:#f3f4f6; color:#111; border:none; padding:14px 16px; border-radius:14px; font-weight:700; }
-  .ui-danger { background:#ef4444; color:#fff; border:none; padding:14px 16px; border-radius:14px; font-weight:800; }
+  .ui-primary { background:#0ea5e9; color:#fff; border:none; padding:14px 16px; border-radius:14px; font-weight:900; }
+  .ui-secondary { background:#f3f4f6; color:#111; border:none; padding:14px 16px; border-radius:14px; font-weight:800; }
+  .ui-danger { background:#ef4444; color:#fff; border:none; padding:14px 16px; border-radius:14px; font-weight:900; }
 
   .top-row { display:grid; gap:12px; grid-template-columns: 1fr; }
   .top-row .grid2 { display:grid; gap:12px; grid-template-columns: 1fr 1fr; }
 
   .hole-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; -ms-overflow-style:none; }
   .hole-tabs::-webkit-scrollbar { display:none; }
-  .hole-pill { padding:12px 14px; border:1px solid #ddd; border-radius:999px; background:#fff; font-weight:800; min-width:56px; text-align:center; }
+  .hole-pill { padding:12px 14px; border:1px solid #ddd; border-radius:999px; background:#fff; font-weight:900; min-width:56px; text-align:center; }
   .hole-pill.active { background:#0ea5e9; color:#fff; border-color:#0ea5e9; }
   .hole-pill.done { border-color:#16a34a; }
 
@@ -253,27 +250,27 @@ export default function UISandbox() {
   .kv { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-bottom:8px; }
   .kv-item { background:#f9fafb; border:1px solid #eee; border-radius:12px; padding:10px; text-align:center; }
   .kv-t { font-size:12px; color:#666; }
-  .kv-v { font-size:18px; font-weight:800; margin-top:4px; }
+  .kv-v { font-size:18px; font-weight:900; margin-top:4px; }
 
-  /* 퀵패드 */
+  /* 하단 퀵패드 (iOS safe-area) */
   .quickpad {
     position: fixed; left: 0; right: 0; bottom: 0;
-    padding: 10px 12px calc(10px + var(--safe));
+    padding: 10px 12px calc(10px + var(--safe-bottom));
     background: rgba(255,255,255,.96);
     backdrop-filter: saturate(180%) blur(6px);
     border-top: 1px solid #e5e7eb;
   }
   .qp-row { max-width: 780px; margin:0 auto; display:grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap:8px; align-items:center; }
   .qp-big { height:56px; font-size:22px; border-radius:14px; border:1px solid #ddd; background:#fff; font-weight:900; }
-  .qp-ghost { height:56px; border-radius:14px; border:1px dashed #ddd; background:#fff; font-weight:800; }
+  .qp-ghost { height:56px; border-radius:14px; border:1px dashed #ddd; background:#fff; font-weight:800; display:grid; place-items:center; }
   .qp-primary { height:56px; border:none; border-radius:14px; background:#0ea5e9; color:#fff; font-weight:900; }
-  .qp-pill { height:56px; border-radius:999px; border:1px solid #ddd; background:#fff; font-weight:800; }
+  .qp-pill { height:56px; border-radius:999px; border:1px solid #ddd; background:#fff; font-weight:900; }
   .qp-pill.active { border-color:#0ea5e9; box-shadow:0 0 0 2px rgba(14,165,233,.15); }
 
   .summary { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; }
   .summary .box { background:#fff; border:1px solid #eee; border-radius:12px; padding:12px; text-align:center; }
   .summary .t { font-size:12px; color:#666; }
-  .summary .v { font-size:18px; font-weight:800; margin-top:4px; }
+  .summary .v { font-size:18px; font-weight:900; margin-top:4px; }
   `;
 
   // 상태
@@ -400,20 +397,7 @@ export default function UISandbox() {
   const gotoPrev = () => setActive(a => Math.max(0, a - 1));
   const gotoNext = () => setActive(a => Math.min(17, a + 1));
 
-  // 스와이프 제스처
-  const touchRef = useRef({ x: 0, t: 0 });
-  const onTouchStart = (e) => {
-    touchRef.current = { x: e.changedTouches[0].clientX, t: Date.now() };
-  };
-  const onTouchEnd = (e) => {
-    const dx = e.changedTouches[0].clientX - touchRef.current.x;
-    const dt = Date.now() - touchRef.current.t;
-    if (dt < 600 && Math.abs(dx) > 60) {
-      if (dx < 0) gotoNext(); else gotoPrev();
-    }
-  };
-
-  // 퀵패드 조작
+  // 퀵패드 조작 (한 번 탭 = 한 단계만)
   const bumpScore = (delta) => {
     const h = holes[active];
     updateHole(active, { ...h, score: clamp((h.score ?? 0) + delta, -5, 10) });
@@ -422,32 +406,25 @@ export default function UISandbox() {
     const h = holes[active];
     updateHole(active, { ...h, putts: clamp((h.putts ?? 0) + delta, 0, 10) });
   };
-  const toggleFIR = () => {
+  const cycleFIR = () => {
     const h = holes[active];
-    const next = h.fir === true ? false : h.fir === false ? null : true; // true -> false -> null
+    const next = h.fir === null ? true : h.fir === true ? false : null;
     updateHole(active, { ...h, fir: next });
   };
-  const toggleGIR = () => {
+  const cycleGIR = () => {
     const h = holes[active];
-    const next = h.gir === true ? false : h.gir === false ? null : true;
+    const next = h.gir === null ? true : h.gir === true ? false : null;
     updateHole(active, { ...h, gir: next });
   };
 
-  // 롱프레스 핸들러
-  const holdDecScore = useHold(() => bumpScore(-1), [holes, active]);
-  const holdIncScore = useHold(() => bumpScore(+1), [holes, active]);
-  const holdDecPutts = useHold(() => bumpPutts(-1), [holes, active]);
-  const holdIncPutts = useHold(() => bumpPutts(+1), [holes, active]);
-
-  // 렌더
   const activeHole = holes[active];
   const activeDone = (h) => (h.putts ?? 0) > 0 || h.fir != null || h.gir != null || (h.score ?? 0) !== 0;
 
   return (
-    <div className="wrap" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div className="wrap">
       <style>{styles}</style>
 
-      <h1>⛳ 라운드 입력(모바일 최적화)</h1>
+      <h1>⛳ 라운드 입력 (iPhone Safari)</h1>
       <div className="sub">{savedAt ? `저장됨: ${savedAt.toLocaleTimeString()}` : '입력 즉시 저장'}</div>
 
       <div className="stack" style={{marginBottom:12}}>
@@ -475,42 +452,30 @@ export default function UISandbox() {
             </div>
 
             <div className="summary">
-              <div className="box">
-                <div className="t">총 스코어(±)</div>
-                <div className="v">{signLabel(summary.totalRel)}</div>
-              </div>
-              <div className="box">
-                <div className="t">퍼팅 합</div>
-                <div className="v">{summary.totalPutts}</div>
-              </div>
-              <div className="box">
-                <div className="t">FIR</div>
-                <div className="v">{summary.firPct == null ? '—' : `${summary.firPct}%`}</div>
-              </div>
-              <div className="box">
-                <div className="t">GIR</div>
-                <div className="v">{summary.girPct == null ? '—' : `${summary.girPct}%`}</div>
-              </div>
+              <div className="box"><div className="t">총 스코어(±)</div><div className="v">{signLabel(summary.totalRel)}</div></div>
+              <div className="box"><div className="t">퍼팅 합</div><div className="v">{summary.totalPutts}</div></div>
+              <div className="box"><div className="t">FIR</div><div className="v">{summary.firPct == null ? '—' : `${summary.firPct}%`}</div></div>
+              <div className="box"><div className="t">GIR</div><div className="v">{summary.girPct == null ? '—' : `${summary.girPct}%`}</div></div>
             </div>
 
             <div className="ui-actions">
-              <button className="ui-secondary" onClick={() => applyParPreset(course)}>코스 파 불러오기</button>
-              <button className="ui-primary" onClick={shareJSON}>공유/내보내기</button>
-              <button className="ui-secondary" onClick={copyJSON}>JSON 복사</button>
-              <button className="ui-danger" onClick={resetAll}>초기화</button>
+              <TapButton className="ui-secondary" onTap={() => applyParPreset(course)}>코스 파 불러오기</TapButton>
+              <TapButton className="ui-primary" onTap={shareJSON}>공유/내보내기</TapButton>
+              <TapButton className="ui-secondary" onTap={copyJSON}>JSON 복사</TapButton>
+              <TapButton className="ui-danger" onTap={resetAll}>초기화</TapButton>
             </div>
           </div>
 
           <div className="ui-card" style={{marginTop:12}}>
             <div className="hole-tabs">
               {holes.map((h, i) => (
-                <button
+                <TapButton
                   key={i}
                   className={`hole-pill ${i === active ? 'active' : ''} ${activeDone(h) ? 'done' : ''}`}
-                  onClick={() => setActive(i)}
+                  onTap={() => setActive(i)}
                 >
                   {h.hole_number}H
-                </button>
+                </TapButton>
               ))}
             </div>
           </div>
@@ -524,18 +489,22 @@ export default function UISandbox() {
       <div className="quickpad">
         <div className="qp-row">
           {/* 스코어 */}
-          <button className="qp-big" {...holdDecScore} onClick={() => bumpScore(-1)}>−</button>
-          <button className="qp-pill" onClick={toggleFIR} style={{fontWeight:900}}>{activeHole.fir ? 'FIR ✓' : (activeHole.fir === false ? 'FIR ✗' : 'FIR •')}</button>
-          <button className="qp-primary" onClick={gotoPrev}>◀ 이전</button>
-          <button className="qp-primary" onClick={gotoNext}>다음 ▶</button>
-          <button className="qp-big" {...holdIncScore} onClick={() => bumpScore(+1)}>＋</button>
+          <TapButton className="qp-big" onTap={() => bumpScore(-1)}>−</TapButton>
+          <TapButton className={`qp-pill ${activeHole.fir ? 'active' : ''}`} onTap={cycleFIR}>
+            {activeHole.fir === null ? 'FIR •' : activeHole.fir ? 'FIR ✓' : 'FIR ✗'}
+          </TapButton>
+          <TapButton className="qp-primary" onTap={gotoPrev}>◀ 이전</TapButton>
+          <TapButton className="qp-primary" onTap={gotoNext}>다음 ▶</TapButton>
+          <TapButton className="qp-big" onTap={() => bumpScore(+1)}>＋</TapButton>
 
           {/* 퍼팅 */}
-          <button className="qp-big" {...holdDecPutts} onClick={() => bumpPutts(-1)}>−</button>
-          <div className="qp-ghost" style={{display:'grid', placeItems:'center'}}>{`퍼팅 ${activeHole.putts ?? 0}`}</div>
-          <button className="qp-pill" onClick={toggleGIR} style={{fontWeight:900}}>{activeHole.gir ? 'GIR ✓' : (activeHole.gir === false ? 'GIR ✗' : 'GIR •')}</button>
-          <div className="qp-ghost" style={{display:'grid', placeItems:'center'}}>{`스코어 ${signLabel(activeHole.score ?? 0)}`}</div>
-          <button className="qp-big" {...holdIncPutts} onClick={() => bumpPutts(+1)}>＋</button>
+          <TapButton className="qp-big" onTap={() => bumpPutts(-1)}>−</TapButton>
+          <div className="qp-ghost">{`퍼팅 ${activeHole.putts ?? 0}`}</div>
+          <TapButton className={`qp-pill ${activeHole.gir ? 'active' : ''}`} onTap={cycleGIR}>
+            {activeHole.gir === null ? 'GIR •' : activeHole.gir ? 'GIR ✓' : 'GIR ✗'}
+          </TapButton>
+          <div className="qp-ghost">{`스코어 ${signLabel(activeHole.score ?? 0)}`}</div>
+          <TapButton className="qp-big" onTap={() => bumpPutts(+1)}>＋</TapButton>
         </div>
       </div>
     </div>
