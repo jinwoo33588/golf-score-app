@@ -1,19 +1,29 @@
 // src/App.jsx
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import TopBar from './components/TopBar';  // TopBar 경로 확인하세요
+
+// 헤더만 포함된 앱 셸 레이아웃 (AppShell 내부에 <Header /> + <Outlet /> 있음)
+import AppShell from './components/layout/AppShell';
+
+// 페이지들
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AddRoundPage from './pages/AddRoundPage';
 import RoundDetailPage from './pages/RoundDetailPage';
 import RoundEditPage from './pages/RoundEditPage';
-import RoundListPage from './pages/RoundListPage';
 import StatsPage from './pages/StatsPage';
 import RoundMasterDetailPage from './pages/RoundMasterDetailPage';
+import UiSandboxPage from './pages/UiSandboxPage';
+
+// 보호 래퍼: 인증 전이면 /login 으로 보냄
+function RequireAuth({ isAuthed, children }) {
+  if (!isAuthed) return <Navigate to="/login" replace />;
+  return children;
+}
 
 function App() {
-  // undefined: 로딩 전 / null: 비로그인 / string: 토큰 존재
+  // undefined: 로딩 전 / null: 비로그인 / 문자열: 토큰 존재
   const [token, setToken] = useState(undefined);
 
   useEffect(() => {
@@ -30,24 +40,40 @@ function App() {
 
   return (
     <Router>
-      {isAuthed && <TopBar />}
       <Routes>
-        {/* 비보호 */}
-        <Route path="/login" element={isAuthed ? <Navigate to="/" replace /> : <LoginPage />} />
-        <Route path="/register" element={isAuthed ? <Navigate to="/" replace /> : <RegisterPage />} />
+        {/* 비보호 라우트 (헤더 없음) */}
+        <Route
+          path="/login"
+          element={isAuthed ? <Navigate to="/" replace /> : <LoginPage />}
+        />
+        <Route
+          path="/register"
+          element={isAuthed ? <Navigate to="/" replace /> : <RegisterPage />}
+        />
 
-        {/* 보호 */}
-        <Route path="/" element={isAuthed ? <HomePage /> : <Navigate to="/login" replace />} />
-        <Route path="/rounds/new" element={isAuthed ? <AddRoundPage /> : <Navigate to="/login" replace />} />
-        <Route path="/rounds/:roundId" element={isAuthed ? <RoundDetailPage /> : <Navigate to="/login" replace />} />
-        <Route path="/rounds/:roundId/edit" element={isAuthed ? <RoundEditPage /> : <Navigate to="/login" replace />} />
-        <Route path="/stats" element={isAuthed ? <StatsPage /> : <Navigate to="/login" replace />} />
-        {/* <Route path="/list" element={isAuthed ? <RoundListPage /> : <Navigate to="/login" replace />} /> */}
-        {/* <Route path="/rounds" element={<RoundListPage />} /> */}
-        <Route path="/rounds" element={<RoundMasterDetailPage />} />
+        {/* 보호 라우트 (헤더 포함 AppShell) */}
+        <Route
+          element={
+            <RequireAuth isAuthed={isAuthed}>
+              <AppShell />
+            </RequireAuth>
+          }
+        >
+          <Route path="/" element={<HomePage />} />
+          <Route path="/rounds" element={<RoundMasterDetailPage />} />
+          <Route path="/rounds/new" element={<AddRoundPage />} />
+          <Route path="/rounds/:roundId" element={<RoundDetailPage />} />
+          <Route path="/rounds/:roundId/edit" element={<RoundEditPage />} />
+          <Route path="/stats" element={<StatsPage />} />
+          <Route path="/profile" element={<div>프로필</div>} />
+          <Route path="/ui-sandbox" element={<UiSandboxPage/>} />
+        </Route>
 
         {/* 알 수 없는 경로 */}
-        <Route path="*" element={<Navigate to={isAuthed ? "/" : "/login"} replace />} />
+        <Route
+          path="*"
+          element={<Navigate to={isAuthed ? '/' : '/login'} replace />}
+        />
       </Routes>
     </Router>
   );

@@ -9,6 +9,12 @@ const LoginPage = () => {
   const [pw, setPw] = useState('');
   const navigate = useNavigate();
 
+  const handleGuestLogin = () => {
+    localStorage.setItem('token', 'LOCAL-GUEST'); // 임시 토큰
+    localStorage.setItem('userId', 'guest');      // 필요시
+    window.location.href = '/ui-sandbox';         // HashRouter면 '/#/ui-sandbox'
+  };
+
   const handleLogin = async () => {
     try {
       const res = await axios.post('http://localhost:4000/api/login', {
@@ -52,6 +58,14 @@ const LoginPage = () => {
         아직 계정이 없나요?{' '}
         <a href="/register" className="login-modern__link">회원가입</a>
       </p>
+
+      <button
+        type="button"
+        onClick={handleGuestLogin}
+        style={{ width:'100%', padding:'12px', borderRadius:10, marginTop:8 }}
+      >
+        게스트로 사용 (DB 없이)
+      </button>
     </div>
 
     

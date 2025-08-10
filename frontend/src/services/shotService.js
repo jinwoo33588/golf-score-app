@@ -27,3 +27,9 @@ export const getShots = (holeId) =>
          result:         s.result,
          notes:          s.notes ?? null,
        })));
+
+export const updateShot = (shotId, patch) =>
+  axios.put(`/shots/${shotId}`, patch).then(res => res.data);
+
+export const deleteShot = (shotId) =>
+  axios.delete(`/shots/${shotId}`).then(res => res.data);

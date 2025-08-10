@@ -4,14 +4,13 @@
 
 html, body { height: auto; overflow-y: auto; }
 #root, #app { min-height: 100%; }
-
-.app-header {
-  /* (선택) 모든 header 태그를 상단에 sticky */
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 999;
+html, body, #root {
+  height: 100%;
 }
+body {
+  overflow-y: auto;  /* 전역 스크롤 허용 */
+}
+
 
 .container {
   padding: 1.5rem;
