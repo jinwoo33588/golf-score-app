@@ -4,8 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useRoundDetail from '../hooks/useRoundDetail';
 import * as holeService from '../services/holeService';
 import * as roundService from '../services/roundService';
-import * as shotService from '../services/shotService';
-import HoleCardEditable from '../components/card/HoleCardEditable';
+// 🔁 HoleCardEditable → HoleCardTest 로 통일
+import HoleCardTest from '../components/card/HoleCardTest';
 import './RoundEditPage.css';
 
 export default function RoundEditPage() {
@@ -31,122 +31,50 @@ export default function RoundEditPage() {
     );
   }, [round]);
 
-  // 홀 목록/패치
+  // 홀 목록
   const holes = useMemo(() => round?.holes ?? [], [round]);
-  const [patches, setPatches] = useState({}); // { [holeId]: {patch} }
 
-  const onChangeHole = useCallback((holeId, patch) => {
-    setPatches(prev => {
-      const prevPatch = prev[holeId];
-      const same =
-        prevPatch &&
-        Object.keys(patch).length === Object.keys(prevPatch).length &&
-        Object.keys(patch).every(k => prevPatch[k] === patch[k]);
-      return same ? prev : { ...prev, [holeId]: patch };
-    });
-  }, []);
+  // 각 홀별 patch 누적
+  const [patches, setPatches] = useState({}); // { [holeId]: { ...diff } }
 
-  // ----- 샷: 기존/새 -----
-  const [existingShotsByHole, setExistingShotsByHole] = useState({}); // { [holeId]: Shot[] }
-  const [newShotsByHole, setNewShotsByHole] = useState({});           // { [holeId]: DraftShot[] }
-
-  // 홀 변경 시 각 홀의 기존 샷 불러오기
-  useEffect(() => {
-    let mounted = true;
-    const fetchAll = async () => {
-      if (!holes.length) return;
-      try {
-        const results = await Promise.all(
-          holes.map(h => shotService.getShots(h.id).catch(() => []))
-        );
-        if (!mounted) return;
-        const byHole = {};
-        const newBuf = {};
-        holes.forEach((h, idx) => {
-          byHole[h.id] = results[idx] ?? [];
-          newBuf[h.id] = [];
-        });
-        setExistingShotsByHole(byHole);
-        setNewShotsByHole(newBuf);
-      } catch {
-        // 무시
+  // 변경점 계산 (필요한 필드만 비교)
+  const diffHole = (base, next) => {
+    const keys = ['par', 'score', 'putts', 'penalties', 'fir', 'gir', 'notes', 'shots'];
+    const patch = {};
+    for (const k of keys) {
+      const a = base?.[k];
+      const b = next?.[k];
+      if (k === 'shots') {
+        const sa = JSON.stringify(a ?? []);
+        const sb = JSON.stringify(b ?? []);
+        if (sa !== sb) patch[k] = b ?? [];
+      } else if (a !== b) {
+        patch[k] = b;
       }
-    };
-    fetchAll();
-    return () => { mounted = false; };
-  }, [holes]);
+    }
+    return patch;
+  };
 
-  // 새 샷 추가/변경/삭제
-  const addNewShot = useCallback((holeId) => {
-    setNewShotsByHole(prev => {
-      const next = { ...prev };
-      const existCount = (existingShotsByHole[holeId]?.length || 0);
-      const newCount = (next[holeId]?.length || 0);
-      const shot_number = existCount + newCount + 1;
-      const draft = {
-        shot_number,
-        club: '',
-        condition: '',
-        remaining_dist: '',
-        actual_dist: '',
-        result: '',
-        notes: '',
-      };
-      next[holeId] = [...(next[holeId] || []), draft];
-      return next;
-    });
-  }, [existingShotsByHole]);
-
-  const updateNewShot = useCallback((holeId, idx, key, value) => {
-    setNewShotsByHole(prev => {
-      const arr = prev[holeId] ? [...prev[holeId]] : [];
-      arr[idx] = { ...arr[idx], [key]: value };
-      return { ...prev, [holeId]: arr };
+  // 카드에서 온 updatedHole을 받아서 해당 홀의 patch 로 축약 저장
+  const onChangeHole = useCallback((holeId, updatedHole, baseHole) => {
+    const delta = diffHole(baseHole, updatedHole);
+    setPatches(prev => {
+      const merged = { ...(prev[holeId] ?? {}), ...delta };
+      // 변경 없으면 그대로
+      const prevMerged = prev[holeId] ?? {};
+      const same =
+        Object.keys(merged).length === Object.keys(prevMerged).length &&
+        Object.keys(merged).every(k => merged[k] === prevMerged[k]);
+      return same ? prev : { ...prev, [holeId]: merged };
     });
   }, []);
 
-  const removeNewShot = useCallback((holeId, idx) => {
-    setNewShotsByHole(prev => {
-      const arr = prev[holeId] ? [...prev[holeId]] : [];
-      arr.splice(idx, 1);
-      // shot_number 재시퀀스
-      const existCount = (existingShotsByHole[holeId]?.length || 0);
-      const reseq = arr.map((s, i) => ({ ...s, shot_number: existCount + i + 1 }));
-      return { ...prev, [holeId]: reseq };
-    });
-  }, [existingShotsByHole]);
-
-  // 기존 샷 수정/삭제 (즉시 커밋)
-  const handleUpdateShot = async (holeId, shotId, patch) => {
-    await shotService.updateShot(shotId, patch);
-    setExistingShotsByHole(prev => {
-      const next = { ...prev };
-      next[holeId] = (next[holeId] ?? []).map(s => s.id === shotId ? { ...s, ...patch } : s);
-      return next;
-    });
-  };
-
-  const handleDeleteShot = async (holeId, shotId) => {
-    await shotService.deleteShot(shotId);
-    setExistingShotsByHole(prev => {
-      const next = { ...prev };
-      next[holeId] = (next[holeId] ?? []).filter(s => s.id !== shotId);
-      return next;
-    });
-    // 새 샷 shot_number에 영향 없음(원하면 여기서 새 샷 시퀀스 재조정 가능)
-  };
-
-  // 저장(홀 패치 + 새 샷 벌크 생성)
-  const totalNewShots = useMemo(
-    () => Object.values(newShotsByHole).reduce((sum, arr) => sum + (arr?.length || 0), 0),
-    [newShotsByHole]
-  );
-  const dirtyCount = Object.keys(patches).length + totalNewShots;
+  const dirtyCount = Object.keys(patches).length;
 
   const onSave = async () => {
     if (!round) return;
     try {
-      // 라운드 메타 (옵션)
+      // 1) 라운드 메타
       try {
         await roundService.updateRound?.(roundId, {
           course_name: meta.course_name,
@@ -154,33 +82,20 @@ export default function RoundEditPage() {
           weather: meta.weather,
         });
       } catch (e) {
-        console.warn('updateRound 스킵:', e?.response?.status);
+        console.warn('updateRound 스킵 또는 실패:', e?.response?.status ?? e?.message);
       }
 
-      // 홀 패치
-      const holeEntries = Object.entries(patches);
-      if (holeEntries.length) {
-        await Promise.all(holeEntries.map(([holeId, patch]) =>
-          holeService.updateHole(holeId, patch)
-        ));
+      // 2) 홀 패치 일괄 저장
+      const entries = Object.entries(patches);
+      if (entries.length) {
+        await Promise.all(
+          entries.map(async ([holeId, patch]) => {
+            // ⚠️ 만약 API가 holeService.updateHole에서 shots 전체 교체를 지원하지 않으면,
+            // 여기서 shots를 분리해 shotService로 upsert/delete 처리하도록 분기하세요.
+            await holeService.updateHole(holeId, patch);
+          })
+        );
       }
-
-      // 새 샷 벌크 생성
-      const shotPromises = [];
-      Object.entries(newShotsByHole).forEach(([holeId, drafts]) => {
-        if (!drafts?.length) return;
-        const payload = drafts.map(s => ({
-          shot_number: s.shot_number,
-          club: s.club || '',
-          condition: s.condition || '',
-          remaining_dist: s.remaining_dist === '' ? null : Number(s.remaining_dist),
-          actual_dist: s.actual_dist === '' ? null : Number(s.actual_dist),
-          result: s.result || '',
-          notes: s.notes || null,
-        }));
-        shotPromises.push(shotService.createShots(holeId, payload));
-      });
-      if (shotPromises.length) await Promise.all(shotPromises);
 
       alert('저장 완료!');
       navigate(`/rounds/${roundId}`);
@@ -240,84 +155,22 @@ export default function RoundEditPage() {
         </div>
       </div>
 
-      {/* 홀 + 샷 */}
+      {/* 홀 편집: HoleCardTest + mode="edit" */}
       <div className="rep-holes">
-      {holes.map(hole => {
-  const draftHole = { ...hole, ...(patches[hole.id] ?? {}) }; // ✅ 원본 + 패치 병합
-  return (
-    <div key={hole.id} className="rep-hole-block">
-      <HoleCardEditable
-        hole={draftHole}                         // ✅ 병합된 값으로 제어
-        shots={existingShotsByHole[hole.id] ?? []}
-        onChangeHole={onChangeHole}
-        onUpdateShot={handleUpdateShot}
-        onDeleteShot={handleDeleteShot}
-        onAddShot={() => addNewShot(hole.id)}
-      />
-
-      {/* 새 샷 버퍼 UI (필요 시 그대로 유지) */}
-      {(newShotsByHole[hole.id] ?? []).length > 0 && (
-        <div className="rep-card rep-shots rep-shots-new">
-          {(newShotsByHole[hole.id] ?? []).map((s, idx) => (
-            <div key={`new-${idx}`} className="rep-shot-row">
-              <span className="rep-chip ghost">#{s.shot_number}</span>
-              <input
-                className="rep-input"
-                placeholder="클럽 (예: 7i, Driver)"
-                value={s.club}
-                onChange={e => updateNewShot(hole.id, idx, 'club', e.target.value)}
+        {holes.map((hole) => {
+          // 화면상 값 = 원본 + 누적 패치 병합 (양방향 제어)
+          const draftHole = { ...hole, ...(patches[hole.id] ?? {}) };
+          return (
+            <div key={hole.id} className="rep-hole-block">
+              <HoleCardTest
+                hole={draftHole}
+                mode="edit"         // ✅ 편집 모드
+                showShots           // 샷 모달 사용
+                onChange={(updated) => onChangeHole(hole.id, updated, draftHole)}
               />
-              <select
-                className="rep-input"
-                value={s.condition}
-                onChange={e => updateNewShot(hole.id, idx, 'condition', e.target.value)}
-              >
-                <option value="">라이/상태</option>
-                <option value="tee">티박스</option>
-                <option value="fairway">페어웨이</option>
-                <option value="rough">러프</option>
-                <option value="bunker">벙커</option>
-                <option value="green">그린</option>
-              </select>
-              <input
-                className="rep-input"
-                type="number"
-                placeholder="남은거리"
-                value={s.remaining_dist}
-                onChange={e => updateNewShot(hole.id, idx, 'remaining_dist', e.target.value)}
-              />
-              <input
-                className="rep-input"
-                type="number"
-                placeholder="실제거리"
-                value={s.actual_dist}
-                onChange={e => updateNewShot(hole.id, idx, 'actual_dist', e.target.value)}
-              />
-              <input
-                className="rep-input"
-                placeholder="결과(예: 좌러프, 온그린)"
-                value={s.result}
-                onChange={e => updateNewShot(hole.id, idx, 'result', e.target.value)}
-              />
-              <input
-                className="rep-input"
-                placeholder="메모"
-                value={s.notes}
-                onChange={e => updateNewShot(hole.id, idx, 'notes', e.target.value)}
-              />
-              <button
-                className="rep-btn danger small"
-                onClick={() => removeNewShot(hole.id, idx)}
-              >
-                제거
-              </button>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-})}
+          );
+        })}
       </div>
     </div>
   );

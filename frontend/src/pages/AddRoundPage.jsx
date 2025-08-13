@@ -14,7 +14,7 @@ import { createHoles, getHolesByRound } from '../services/holeService';
 import { createShot }        from '../services/shotService';
 
 const courseData = {
-  '아시아나CC': [4,5,4,3,4,3,5,3,4,4,4,5,3,4,4,5,3,4],
+  '아시아나CC': [4,4,4,5,4,3,5,3,4,5,3,4,4,4,5,3,4,4],
   '레이크우드CC': [4,4,5,3,4,3,4,5,4,4,5,3,4,4,4,5,3,4],
   '양평 TPC CC': [4,5,3,4,4,4,3,4,5,4,4,4,3,5,4,3,5,4]
 };

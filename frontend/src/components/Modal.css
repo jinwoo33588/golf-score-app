@@ -1,0 +1,18 @@
+/* Modal.css 최소 스타일 (원하면 unified.css에 합쳐도 됨) */
+.gt-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.gt-modal {
+  width: min(800px, 92vw);
+  max-height: 80vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.gt-modal-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+.gt-modal-body { font-size: 14px; }

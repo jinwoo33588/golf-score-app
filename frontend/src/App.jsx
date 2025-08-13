@@ -15,6 +15,8 @@ import RoundEditPage from './pages/RoundEditPage';
 import StatsPage from './pages/StatsPage';
 import RoundMasterDetailPage from './pages/RoundMasterDetailPage';
 import UiSandboxPage from './pages/UiSandboxPage';
+import UiTestPage from './pages/UiTestPage';
+import HoleCardsSandbox from './pages/test/HoleCardsSandbox';
 
 // 보호 래퍼: 인증 전이면 /login 으로 보냄
 function RequireAuth({ isAuthed, children }) {
@@ -67,6 +69,9 @@ function App() {
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/profile" element={<div>프로필</div>} />
           <Route path="/ui-sandbox" element={<UiSandboxPage/>} />
+          <Route path="/ui-test" element={<UiTestPage />} />
+          <Route path="/test/hole-cards" element={<HoleCardsSandbox />} />
+
         </Route>
 
         {/* 알 수 없는 경로 */}

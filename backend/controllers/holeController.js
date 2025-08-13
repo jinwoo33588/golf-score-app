@@ -11,7 +11,7 @@ exports.createHolesHandler = async (req, res, next) => {
       score:       h.score    != null && h.score !== '' ? Number(h.score) : null,
       putts:       h.putts    != null && h.putts !== '' ? Number(h.putts) : null,
       gir:         Boolean(h.gir),
-      fw_hit:      Boolean(h.fw_hit),
+      fir:      Boolean(h.fir),
       penalties:   h.penalties != null ? Number(h.penalties) : 0
     }));
     const inserted = await createHoles(roundId, holesData);
@@ -30,7 +30,7 @@ exports.getHolesHandler = async (req, res, next) => {
     const holes = raw.map(h => ({
       ...h,
       gir: Boolean(h.gir),
-      fw_hit: Boolean(h.fw_hit),
+      fir: Boolean(h.fir),
     }));
     res.json(holes);
   } catch (err) {
@@ -54,7 +54,7 @@ exports.updateHoleHandler = async (req, res, next) => {
       score:     req.body.score     != null ? Number(req.body.score) : null,
       putts:     req.body.putts     != null ? Number(req.body.putts) : null,
       gir:       Boolean(req.body.gir),
-      fw_hit:    Boolean(req.body.fw_hit),
+      fir:    Boolean(req.body.fir),
       penalties: req.body.penalties != null ? Number(req.body.penalties) : 0,
       notes:     req.body.notes ?? null,
     };

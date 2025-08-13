@@ -1,15 +1,27 @@
-// ✅ src/components/Modal.jsx
-const Modal = ({ isOpen, onClose, children }) => {
-  if (!isOpen) return null;
+// src/components/Modal.jsx
+import React, { useEffect } from 'react';
+import './Modal.css'; // 필요시
+
+export default function Modal({ open, onClose, title, children }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden'; // 백스크롤 방지
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded p-6 shadow-lg w-80">
-        {children}
-        <button onClick={onClose} className="text-sm text-gray-500 mt-4">닫기</button>
+    <div className="gt-modal-backdrop" onClick={onClose}>
+      <div className="gt-modal" onClick={(e) => e.stopPropagation()}>
+        {title && <div className="gt-modal-title">{title}</div>}
+        <div className="gt-modal-body">{children}</div>
       </div>
     </div>
   );
-};
-
-export default Modal;
+}

@@ -1,246 +1,67 @@
-// src/components/round/FullRoundForm.jsx
 import React from 'react';
+import HoleCardTest from '../card/HoleCardTest';
 import './FullRoundForm.css';
 
 const FullRoundForm = ({ roundData, setRoundData }) => {
-  // 일반 필드 변경
-  const handleChange = (index, field, value) => {
-    const updated = [...roundData];
-    updated[index][field] = value;
-    setRoundData(updated);
-  };
+  // HoleCardTest에서 올라온 updatedHole을 roundData[index] 구조에 맞춰 반영
+  const handleHoleChange = (index, updated) => {
+    setRoundData(prev => {
+      const next = [...prev];
+      const orig = next[index] || {};
 
-  // ─── Score controls per hole ───────────────────────────────────
-  const decrementScore = (index) => {
-    const s = roundData[index].score;
-    // 현재값이 있으면 그 값, 없으면 null
-    const current = s !== '' && s != null ? s : null;
-    // 값이 있으면 current-1, 없으면 0, 최소값 -2
-    const newVal = current != null
-      ? Math.max(-2, current - 1)
-      : 0;
-    handleChange(index, 'score', newVal);
-  };
-  const incrementScore = (index) => {
-    const s = roundData[index].score;
-    const current = s !== '' && s != null ? s : null;
-    const maxPar  = roundData[index].par;
-    // 값이 있으면 current+1, 없으면 0, 최대값 par
-    const newVal = current != null
-      ? Math.min(current + 1, maxPar)
-      : 0;
-    handleChange(index, 'score', newVal);
-  };
+      next[index] = {
+        ...orig,
+        // 번호/Par
+        hole: orig.hole ?? (updated.hole_number ?? index + 1),
+        par: updated.par ?? orig.par ?? 4,
 
-  // ─── Putts controls per hole ────────────────────────────────────
-  const decrementPutts = (index) => {
-    const p = roundData[index].putts;
-    // 빈 값이면 기본 2
-    const current = p !== '' && p != null ? p : null;
-    // current-1, 최소값 1
-    const newVal = current != null
-      ?  Math.max(1, current - 1)
-      : 2;
-    handleChange(index, 'putts', newVal);
-  };
-  const incrementPutts = (index) => {
-    const p = roundData[index].putts;
-    const current = p !== '' && p != null ? p : null;
-    // 언제나 +1
-    const newVal = current != null
-      ? current + 1
-      : 2; // 빈 값은 2로 처리
-    handleChange(index, 'putts', newVal);
-  };
+        // 스코어/퍼팅/벌타(± 스코어 유지)
+        score:      typeof updated.score      === 'number' ? updated.score      : (orig.score ?? 0),
+        putts:      typeof updated.putts      === 'number' ? updated.putts      : (orig.putts ?? 2),
+        penalties:  typeof updated.penalties  === 'number' ? updated.penalties  : (orig.penalties ?? 0),
 
-  // ─── Shot 배열 변경 함수들 ────────────────────────────────────────
-  const handleShotChange = (holeIdx, shotIdx, key, value) => {
-    const updated = [...roundData];
-    updated[holeIdx].shots[shotIdx][key] = value;
-    setRoundData(updated);
-  };
-  const addShot = (holeIdx) => {
-    const updated = [...roundData];
-    updated[holeIdx].shots.push({
-      club:           '',
-      condition:      '',
-      remaining_dist: '',
-      actual_dist:    '',
-      result:         '',
-      notes:          ''
+        // FIR/GIR: tri-state(null)도 저장 가능 (기존 fw_hit는 boolean이었으면 그대로 사용 가능)
+        fw_hit: (updated.fir !== undefined ? updated.fir : orig.fw_hit ?? null),
+        gir:    (updated.gir !== undefined ? updated.gir : orig.gir    ?? null),
+
+        // 노트/샷
+        notes: updated.notes ?? orig.notes ?? '',
+        shots: Array.isArray(updated.shots) ? updated.shots : (orig.shots || []),
+      };
+
+      return next;
     });
-    setRoundData(updated);
-  };
-  const removeShot = (holeIdx, shotIdx) => {
-    const updated = [...roundData];
-    updated[holeIdx].shots.splice(shotIdx, 1);
-    setRoundData(updated);
   };
 
   return (
     <div className="full-round-form">
       <h1>🏁 라운드 종료 후 입력 (18홀 전체)</h1>
-      {roundData.map((hole, idx) => (
-        <div key={hole.hole} className="hole-row">
-          <div className="hole-header">
-            {/* 홀 번호 / Par */}
-            <div className="hole-number">
-              {hole.hole}홀 <span className="hole-par">(Par {hole.par})</span>
-            </div>
 
-            {/* Score control */}
-            <div className="score-control">
-              <button
-                onClick={() => decrementScore(idx)}
-                disabled={
-                  roundData[idx].score != null
-                    ? roundData[idx].score <= -2
-                    : false
-                }
-              >−</button>
-              <span>
-                {roundData[idx].score != null
-                  ? roundData[idx].score
-                  : 0}
-              </span>
-              <button
-                onClick={() => incrementScore(idx)}
-                disabled={
-                  roundData[idx].score != null
-                    ? roundData[idx].score >= hole.par
-                    : false
-                }
-              >＋</button>
-            </div>
+      {roundData.map((hole, idx) => {
+        // HoleCardTest가 기대하는 형태로 뷰 모델 구성
+        const vmHole = {
+          hole_number: hole.hole ?? (idx + 1),
+          par: hole.par,
+          score: hole.score ?? 0,          // ± 스코어
+          putts: hole.putts ?? 2,
+          penalties: hole.penalties ?? 0,
+          fir: hole.fw_hit ?? null,        // fw_hit ↔ fir 매핑
+          gir: hole.gir ?? null,
+          notes: hole.notes ?? '',
+          shots: hole.shots ?? [],
+        };
 
-            {/* Putts control */}
-            <div className="putts-control">
-              <button
-                onClick={() => decrementPutts(idx)}
-                disabled={
-                  // 빈 값은 2로 보고, 1 이하면 비활성화
-                  (roundData[idx].putts !== '' && roundData[idx].putts != null
-                    ? roundData[idx].putts
-                    : 2) <= 1
-                }
-              >−</button>
-              <span>
-                {roundData[idx].putts != null
-                  ? roundData[idx].putts
-                  : 2}
-              </span>
-              <button onClick={() => incrementPutts(idx)}>＋</button>
-            </div>
-
-            {/* FIR / GIR / Penalties */}
-            <label>
-              FIR
-              <input
-                type="checkbox"
-                checked={hole.fw_hit}
-                onChange={e => handleChange(idx, 'fw_hit', e.target.checked)}
-              />
-            </label>
-            <label>
-              GIR
-              <input
-                type="checkbox"
-                checked={hole.gir}
-                onChange={e => handleChange(idx, 'gir', e.target.checked)}
-              />
-            </label>
-            <input
-              type="number"
-              value={hole.penalties}
-              onChange={e => handleChange(idx, 'penalties', e.target.value)}
-              placeholder="벌타"
-              min="0"
+        return (
+          <div key={`${hole.hole ?? idx}-${idx}`} className="hole-row">
+            <HoleCardTest
+              hole={vmHole}
+              mode="edit"          // ✅ 편집 모드
+              showShots            // 샷 모달 사용
+              onChange={(updated) => handleHoleChange(idx, updated)}
             />
-
-            {/* + 샷 추가 버튼 */}
-            <button
-              onClick={() => addShot(idx)}
-              className="add-shot-btn"
-            >
-              + 샷 추가
-            </button>
           </div>
-
-          {/* Shots list */}
-          <div className="shots-list">
-            {hole.shots.map((s, j) => (
-              <div key={j} className="shot-item">
-                <select
-                  value={s.club}
-                  onChange={e => handleShotChange(idx, j, 'club', e.target.value)}
-                >
-                  <option value="">클럽</option>
-                  <option>드라이버</option>
-                  <option>3번 우드</option>
-                  <option>5번 우드</option>
-                  <option>4번 유틸리티</option>
-                  <option>5번 아이언</option>
-                  <option>6번 아이언</option>
-                  <option>7번 아이언</option>
-                  <option>8번 아이언</option>
-                  <option>9번 아이언</option>
-                  <option>PW</option>
-                  <option>50도</option>
-                  <option>52도</option>
-                  <option>56도</option>
-                  <option>퍼터</option>
-                </select>
-
-                <select
-                  value={s.condition}
-                  onChange={e => handleShotChange(idx, j, 'condition', e.target.value)}
-                >
-                  <option value="tee">Tee</option>
-                  <option value="fairway">Fairway</option>
-                  <option value="rough">Rough</option>
-                  <option value="bunker">Bunker</option>
-                  <option value="penalty">Penalty</option>
-                </select>
-
-                <input
-                  type="number"
-                  placeholder="남은 거리"
-                  value={s.remaining_dist}
-                  onChange={e => handleShotChange(idx, j, 'remaining_dist', e.target.value)}
-                />
-
-                <input
-                  type="number"
-                  placeholder="실제 거리"
-                  value={s.actual_dist}
-                  onChange={e => handleShotChange(idx, j, 'actual_dist', e.target.value)}
-                />
-
-                <input
-                  type="text"
-                  placeholder="Result"
-                  value={s.result}
-                  onChange={e => handleShotChange(idx, j, 'result', e.target.value)}
-                />
-
-                <input
-                  type="text"
-                  placeholder="Notes"
-                  value={s.notes}
-                  onChange={e => handleShotChange(idx, j, 'notes', e.target.value)}
-                />
-
-                <button
-                  onClick={() => removeShot(idx, j)}
-                  className="remove-shot"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

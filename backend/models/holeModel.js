@@ -2,7 +2,7 @@
 const pool = require('../config/db');
 
 // 여러 홀을 한 번에 생성
-// holesData = [{ hole_number, par, score, putts, gir, fw_hit, penalties }, …]
+// holesData = [{ hole_number, par, score, putts, gir, fir, penalties }, …]
 async function createHoles(roundId, holesData) {
   const values = holesData.map(h => [
     roundId,
@@ -11,12 +11,12 @@ async function createHoles(roundId, holesData) {
     h.score    ?? null,
     h.putts    ?? null,
     h.gir ? 1 : 0,
-    h.fw_hit   ? 1 : 0,
+    h.fir   ? 1 : 0,
     h.penalties ?? 0
   ]);
   const [result] = await pool.query(
     `INSERT INTO holes
-     (round_id, hole_number, par, score, putts, gir, fw_hit, penalties)
+     (round_id, hole_number, par, score, putts, gir, fir, penalties)
      VALUES ?`,
     [values]
   );
@@ -34,7 +34,7 @@ async function getHolesByRound(roundId) {
        score,
        putts,
        gir,
-       fw_hit,
+       fir,
        penalties,
        notes
      FROM holes
@@ -46,13 +46,13 @@ async function getHolesByRound(roundId) {
 }
 
 // ✅ 개별 홀 업데이트 (스키마 정합)
-async function updateHole(holeId, { score, putts, gir, fw_hit, penalties = 0, notes }) {
+async function updateHole(holeId, { score, putts, gir, fir, penalties = 0, notes }) {
   const [result] = await pool.query(
     `UPDATE holes
        SET score     = ?,
            putts     = ?,
            gir       = ?,
-           fw_hit    = ?,
+           fir    = ?,
            penalties = ?,
            notes     = ?
      WHERE id = ?`,
@@ -60,7 +60,7 @@ async function updateHole(holeId, { score, putts, gir, fw_hit, penalties = 0, no
       score != null ? Number(score) : null,
       putts != null ? Number(putts) : null,
       gir ? 1 : 0,
-      fw_hit ? 1 : 0,
+      fir ? 1 : 0,
       penalties != null ? Number(penalties) : 0,
       notes ?? null,
       holeId

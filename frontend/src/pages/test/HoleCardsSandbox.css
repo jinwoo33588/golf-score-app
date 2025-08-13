@@ -1,0 +1,50 @@
+.sandbox-wrap {
+  padding: 16px;
+}
+
+.sandbox-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.sandbox-head h1 { margin: 0; font-size: 18px; }
+.toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.toolbar label { display: flex; align-items: center; gap: 6px; }
+
+.sandbox-json {
+  background: #0b1220;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 12px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.sandbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.comp-box {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
+}
+.comp-box h3 { margin: 0 0 8px; font-size: 15px; }
+
+.card-outer {
+  width: 100%;
+  max-width: var(--card-w, 420px);
+  margin: 0 auto;
+}
+
+/* Unified의 밀도 토글 대응 (선택) */
+.gt--compact .gt-holecard { padding: 8px; border-radius: 10px; }
+.gt--compact .gt-stepper__ctrl button { width: 24px; height: 24px; }
+.gt--compact .gt-ynbtn { padding: 4px 8px; }
+.gt--compact .gt-shotrow input { padding: 4px 6px; }

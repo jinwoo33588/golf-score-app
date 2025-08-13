@@ -1,7 +1,9 @@
+// src/pages/RoundDetailPage.jsx
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useRoundDetail from '../hooks/useRoundDetail';
-import HoleCard from '../components/HoleCard'; // ✅ 추가
+// ✅ 기존 HoleCard 대신 테스트 컴포넌트 사용
+import HoleCardTest from '../components/card/HoleCardTest';
 import './RoundDetailPage.css';
 
 export default function RoundDetailPage() {
@@ -96,10 +98,16 @@ export default function RoundDetailPage() {
         </div>
       </div>
 
-      {/* 홀 목록 */}
+      {/* 홀 목록 (✅ HoleCardTest 사용) */}
       <div className="rdp-holes">
         {holes.map((h) => (
-          <HoleCard key={h.id} hole={h} />
+          <HoleCardTest
+            key={h.id}
+            hole={h}
+            mode="view"          // 상세 페이지는 보기 모드
+            onChange={() => {}}  // view 모드라 no-op
+            showShots            // 샷 모달 버튼 표시
+          />
         ))}
       </div>
     </div>

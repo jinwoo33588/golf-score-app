@@ -1,6 +1,8 @@
 /* src/components/unified/unified.css */
 
+/* ============ Card ============ */
 .gt-holecard {
+  box-sizing: border-box;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 12px;
@@ -8,6 +10,8 @@
   background: #fff;
 }
 .gt-holecard.is-view { background: #fafafa; }
+
+/* (구버전 헤더 레이아웃 호환용) */
 .gt-holehead {
   display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;
 }
@@ -17,44 +21,279 @@
 .gt-hole-badges { display:flex; gap:8px; }
 .gt-badge { display:flex; align-items:center; gap:6px; font-size:12px; color:#374151; }
 
+/* ============ Yes/No badges (view) ============ */
 .gt-ynbadge { padding:2px 8px; border-radius:999px; font-weight:600; font-size:11px; }
 .gt-ynbadge.yes { background:#e8f5e9; color:#166534; }
 .gt-ynbadge.no  { background:#fee2e2; color:#991b1b; }
 
+/* ============ One-line row layout ============ */
+/* grid → flex 로 전환해 모든 항목을 일렬로 배치 */
 .gt-holegrid {
-  display:grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap:10px;
-  margin-bottom:10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;           /* 줄바꿈 금지 = 완전 일렬 */
+  overflow-x: auto;            /* 좁은 화면 가로 스크롤 허용 */
+  -webkit-overflow-scrolling: touch;
 }
 
+/* 개별 아이템은 내용 크기만큼만 차지 */
+.gt-holehead__left,
+.gt-stepper,
+.gt-yesno,
+.gt-hole-badges,
+.gt-inline-actions {
+  flex: 0 0 auto;
+  
+}
+
+/* 오른쪽으로 밀기 위한 스페이서 */
+.gt-spacer-flex { flex: 1 1 auto; }
+
+/* 초소형 화면에서만 줄바꿈하고 싶다면 */
+@media (max-width: 560px) {
+  .gt-holegrid { flex-wrap: wrap; overflow-x: visible; }
+  .gt-spacer-flex { flex-basis: 100%; height: 0; }
+}
+
+/* 라벨과 컨트롤을 세로로 쌓고 중앙 정렬 */
+.gt-stepper,
+.gt-yesno {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* <-- 핵심 */
+}
+
+/* 라벨 텍스트 자체도 가운데 맞춤 */
+.gt-stepper__label,
+.gt-yesno__label {
+  text-align: center;
+  width: 100%;
+}
+
+/* 예/아니오 버튼 줄도 가운데 정렬(옵션) */
+.gt-yesno__buttons {
+  justify-content: center;
+}
+
+/* 스테퍼 버튼/인풋을 가운데로(옵션: 래퍼 폭이 넓을 때) */
+.gt-stepper__ctrl {
+  justify-content: center;
+}
+
+/* ============ Number Stepper ============ */
 .gt-stepper {}
 .gt-stepper__label { font-size:12px; color:#374151; margin-bottom:4px; }
 .gt-stepper__ctrl { display:flex; align-items:center; gap:8px; }
-.gt-stepper__ctrl button { width:28px; height:28px; border:1px solid #d1d5db; border-radius:6px; background:#fff; }
-.gt-stepper__value { min-width:32px; text-align:center; }
+.gt-stepper__ctrl button {
+  width:28px; height:28px;
+  border:1px solid #d1d5db; border-radius:6px; background:#fff; cursor:pointer;
+}
+.gt-stepper__ctrl button:hover { border-color:#9ca3af; }
+.gt-stepper__value {
+  width:42px; min-width:42px; text-align:center;
+  border:1px solid #e5e7eb; border-radius:6px; padding:4px 6px;
+}
+.gt-stepper__value:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
 
+/* ============ Yes/No (edit) ============ */
 .gt-yesno {}
 .gt-yesno__label { font-size:12px; color:#374151; margin-bottom:4px; }
 .gt-yesno__buttons { display:flex; gap:6px; }
-.gt-ynbtn { padding:6px 10px; border:1px solid #d1d5db; border-radius:6px; background:#fff; }
+.gt-ynbtn { padding:6px 10px; border:1px solid #d1d5db; border-radius:6px; background:#fff; cursor:pointer; }
+.gt-ynbtn:hover { border-color:#9ca3af; }
 .gt-ynbtn.active { border-color:#111827; font-weight:700; }
 
+/* ============ Notes (view/edit 공용 – 모달 안에서도 사용 가능) ============ */
 .gt-holenotes { margin-top:8px; }
 .gt-notes__label { font-size:12px; color:#374151; margin-bottom:4px; }
-.gt-notes__view { min-height:36px; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; background:#f9fafb; }
-.gt-notes__view.is-empty { color:#9ca3af; }
-.gt-holenotes textarea { width:100%; min-height:60px; border:1px solid #e5e7eb; border-radius:8px; padding:8px; }
+.gt-notes__view {
+  min-height:36px; padding:6px 8px;
+  border:1px solid #e5e7eb; border-radius:8px; background:#f9fafb;
+}
+.gt-notes__view.is-empty { color:#9ca3af; font-style: italic; }
+.gt-holenotes textarea {
+  width:100%; min-height:60px; border:1px solid #e5e7eb; border-radius:8px; padding:8px;
+}
+.gt-holenotes textarea:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
 
+/* ============ Inline actions (노트/샷 버튼) ============ */
+.gt-inline-actions { display:flex; gap:8px; }
+.gt-btn {
+  padding:8px 12px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; cursor:pointer;
+}
+.gt-btn:hover { border-color:#9ca3af; }
+.gt-btn.primary { background:#111827; color:#fff; border-color:#111827; }
+.gt-btn.ghost { background:transparent; }
+
+/* 모달 하단 버튼 줄 */
+.gt-modal-actions {
+  display:flex; justify-content:flex-end; gap:8px; margin-top:12px;
+}
+
+/* ============ Shots (표 레이아웃 – 모달 내부에서 사용) ============ */
 .gt-holeshots { margin-top:12px; }
 .gt-section__title { font-weight:700; margin-bottom:6px; }
 
 .gt-shotlist { border:1px solid #e5e7eb; border-radius:10px; padding:8px; background:#fff; }
-.gt-shotheader, .gt-shotrow { display:grid; grid-template-columns: 40px 1fr 1fr 70px 70px 1fr 2fr 70px; gap:6px; align-items:center; }
+.gt-shotheader,
+.gt-shotrow {
+  display:grid;
+  grid-template-columns: 40px 1fr 1fr 70px 70px 1fr 2fr 70px;
+  gap:6px; align-items:center;
+}
 .gt-shotheader { font-size:12px; color:#6b7280; margin-bottom:6px; }
-.gt-shotrow input { width:100%; border:1px solid #e5e7eb; border-radius:6px; padding:6px 8px; }
-.gt-shotremove, .gt-shotadd { border:1px solid #d1d5db; background:#fff; border-radius:8px; padding:6px 10px; }
+.gt-shotrow input {
+  width:100%; border:1px solid #e5e7eb; border-radius:6px; padding:6px 8px;
+}
+.gt-shotrow input:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
+
+.gt-shotremove, .gt-shotadd {
+  border:1px solid #d1d5db; background:#fff; border-radius:8px; padding:6px 10px; cursor:pointer;
+}
 .gt-shotadd { margin-top:8px; }
+.gt-shotremove:hover, .gt-shotadd:hover { border-color:#9ca3af; }
+
 .gt-shotempty { color:#9ca3af; font-size:14px; padding:6px 0; }
 
+/* ============ Utilities ============ */
 .gt-spacer { height:1px; visibility:hidden; }
+
+/* (선택) Modal 기본 스타일 – Modal.jsx가 동일 클래스 사용 시 적용됨 */
+.gt-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.gt-modal {
+  width: min(800px, 92vw);
+  max-height: 80vh; overflow: auto;
+  background: #fff; border-radius: 12px; padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.gt-modal-title { font-weight:700; font-size:16px; margin-bottom:8px; }
+.gt-modal-body { font-size:14px; }
+
+/* ============ (옵션) 다크모드 ============ */
+@media (prefers-color-scheme: dark) {
+  .gt-holecard.is-view { background:#0f172a; }
+  .gt-holecard { background:#111827; border-color:#334155; }
+  .gt-hole-meta { color:#cbd5e1; }
+  .gt-badge { color:#e5e7eb; }
+  .gt-stepper__value, .gt-shotrow input { background:#0b1220; color:#e5e7eb; border-color:#334155; }
+  .gt-btn { background:#0b1220; color:#e5e7eb; border-color:#334155; }
+  .gt-btn.primary { background:#1f2937; border-color:#1f2937; }
+  .gt-shotlist { background:#0b1220; border-color:#334155; }
+  .gt-notes__view { background:#0b1220; border-color:#334155; color:#e5e7eb; }
+}
+
+
+/* === Chip-style stats row (HoleCard 스타일 참고) === */
+.gt-statrow {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.gt-statcard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 82px;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.gt-chip-title {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.gt-chip-value {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+/* Score 색상 */
+.gt-chip-value.good    { color: #166534; } /* - under par */
+.gt-chip-value.bad     { color: #991b1b; } /* + over par */
+.gt-chip-value.neutral { color: #374151; } /* 0 */
+
+/* FIR/GIR 토글칩 배경 */
+.gt-statcard.toggle.ok  { background: #e8f5e9; border-color: #d3e9d6; color: #14532d; }
+.gt-statcard.toggle.no  { background: #fee2e2; border-color: #f5caca; color: #7f1d1d; }
+
+/* Putts/Penalties 강조 살짝 */
+.gt-statcard.putts .gt-chip-value,
+.gt-statcard.penalties .gt-chip-value {
+  font-weight: 800;
+}
+
+/* 편집용 컨트롤 묶음 한 줄 */
+.gt-editrow { display:flex; align-items:center; gap:8px; }
+
+/* 라벨들을 가운데 정렬(이미 넣었으면 생략 가능) */
+.gt-stepper, .gt-yesno { display:flex; flex-direction:column; align-items:center; }
+/* 다크 모드 대응(옵션) */
+@media (prefers-color-scheme: dark) {
+  .gt-statcard { background:#0b1220; border-color:#334155; }
+  .gt-chip-title { color:#94a3b8; }
+  .gt-chip-value.neutral { color:#e5e7eb; }
+  .gt-statcard.toggle.ok  { background:#0f2e1a; border-color:#1f5a31; color:#a7f3d0; }
+  .gt-statcard.toggle.no  { background:#3a1212; border-color:#7f1d1d; color:#fecaca; }
+}
+
+
+
+
+
+
+/* 칩 컨트롤 공통 */
+.gt-statrow { display:flex; align-items:stretch; gap:8px; }
+.gt-statcard { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:82px; padding:8px 10px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
+.gt-chip-title { font-size:11px; color:#6b7280; margin-bottom:2px; }
+.gt-chip-value { font-weight:700; font-size:16px; line-height:1.2; }
+
+/* Score 색상 */
+.gt-chip-value.good    { color:#166534; }
+.gt-chip-value.bad     { color:#991b1b; }
+.gt-chip-value.neutral { color:#374151; }
+
+/* toggle 뱃지 컬러(뷰) */
+.gt-statcard.toggle.ok { background:#e8f5e9; border-color:#d3e9d6; color:#14532d; }
+.gt-statcard.toggle.no { background:#fee2e2; border-color:#f5caca; color:#7f1d1d; }
+.gt-statcard.toggle.na { background:#f3f4f6; border-color:#e5e7eb; color:#374151; }
+
+/* edit 모드 컨트롤 */
+.gt-statcard.is-edit { background:#fff; border-color:#e5e7eb; }
+.gt-chip-ctrl { display:flex; align-items:center; gap:6px; }
+.gt-chip-btn { width:28px; height:28px; border:1px solid #d1d5db; border-radius:6px; background:#fff; cursor:pointer; }
+.gt-chip-btn:hover { border-color:#9ca3af; }
+.gt-chip-num { min-width:28px; text-align:center; font-weight:700; font-size:16px; }
+
+.gt-chip-seg { display:flex; align-items:center; gap:6px; }
+.gt-chip-seg .seg { padding:6px 10px; border:1px solid #d1d5db; border-radius:9999px; background:#fff; font-size:12px; cursor:pointer; }
+.gt-chip-seg .seg:hover { border-color:#9ca3af; }
+.gt-chip-seg .seg.active.yes { background:#e8f5e9; border-color:#a7f3d0; color:#166534; }
+.gt-chip-seg .seg.active.no  { background:#fee2e2; border-color:#fecaca; color:#991b1b; }
+.gt-chip-seg .seg.active.na  { background:#f3f4f6; border-color:#e5e7eb; color:#374151; }
+
+/* 다크 모드 (선택) */
+@media (prefers-color-scheme: dark) {
+  .gt-statcard { background:#0b1220; border-color:#334155; }
+  .gt-chip-title { color:#94a3b8; }
+  .gt-chip-value.neutral { color:#e5e7eb; }
+  .gt-statcard.toggle.ok  { background:#0f2e1a; border-color:#1f5a31; color:#a7f3d0; }
+  .gt-statcard.toggle.no  { background:#3a1212; border-color:#7f1d1d; color:#fecaca; }
+  .gt-statcard.toggle.na  { background:#1f2937; border-color:#374151; color:#e5e7eb; }
+  .gt-statcard.is-edit { background:#0b1220; border-color:#334155; }
+  .gt-chip-btn { background:#0b1220; border-color:#334155; color:#e5e7eb; }
+  .gt-chip-seg .seg { background:#0b1220; border-color:#334155; color:#e5e7eb; }
+  .gt-chip-seg .seg.active.na { background:#111827; border-color:#475569; color:#e5e7eb; }
+}

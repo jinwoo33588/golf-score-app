@@ -26,9 +26,9 @@ export default function HoleCard({ hole }) {
           <div className={`chip-value ${relClass}`}>{relLabel}</div>
         </div>
 
-        <div className={`stat-card toggle ${h.fw_hit ? 'ok' : 'no'}`}>
+        <div className={`stat-card toggle ${h.fir ? 'ok' : 'no'}`}>
           <div className="chip-title">FIR</div>
-          <div className="chip-value">{h.fw_hit ? 'Yes' : 'No'}</div>
+          <div className="chip-value">{h.fir ? 'Yes' : 'No'}</div>
         </div>
 
         <div className={`stat-card toggle ${h.gir ? 'ok' : 'no'}`}>
@@ -76,7 +76,7 @@ HoleCard.propTypes = {
     hole_number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     par: PropTypes.number,
     score: PropTypes.number,       // ± 스코어
-    fw_hit: PropTypes.bool,
+    fir: PropTypes.bool,
     gir: PropTypes.bool,
     putts: PropTypes.number,
     penalties: PropTypes.number,

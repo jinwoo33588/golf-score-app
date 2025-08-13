@@ -19,7 +19,7 @@ export default function NumberStepper({
   const set = (n) => !disabled && onChange && onChange(clamp(n));
 
   return (
-    <div className="gt-stepper">
+    <div className="gt-statcard">
       {label && <div className="gt-stepper__label">{label}</div>}
       <div className={`gt-stepper__ctrl ${disabled ? 'is-disabled' : ''}`}>
         <button type="button" onClick={() => set(v - step)} disabled={disabled}>-</button>
