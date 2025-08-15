@@ -1,0 +1,119 @@
+/* theme.css 토큰만 사용 */
+/* 전역 충돌 방지 스코프 */
+.login-modern * { box-sizing: border-box; }
+
+.login-modern {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, var(--bg-grad1) 0%, transparent 60%),
+    radial-gradient(800px 400px at 100% 0%, var(--bg-grad2) 0%, transparent 60%),
+    var(--bg);
+  color: var(--text);
+}
+
+.login-modern__form {
+  width: min(420px, 100%);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--text) 3%, transparent), color-mix(in oklab, var(--text) 1%, transparent));
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35),
+    inset 0 1px 0 color-mix(in oklab, var(--text) 3%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.login-modern__title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin: 0 0 20px;
+}
+
+.login-modern__field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.login-modern__field > span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.login-modern__input {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--card), var(--card-2));
+  color: var(--text);
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease, transform .02s ease;
+}
+.login-modern__input::placeholder {
+  color: color-mix(in oklab, var(--muted) 80%, transparent);
+}
+.login-modern__input:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 35%, transparent);
+}
+
+.login-modern__button {
+  width: 100%;
+  height: 46px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform .05s ease, filter .2s ease, opacity .2s ease;
+}
+.login-modern__button:hover { filter: brightness(1.05); }
+.login-modern__button:active { transform: translateY(1px); }
+.login-modern__button:disabled { opacity: .6; cursor: not-allowed; }
+
+.login-modern__error {
+  margin: 12px 0 0;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.login-modern__footer {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.login-modern__link {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--text) 30%, transparent);
+  text-underline-offset: 3px;
+}
+
+.login-modern__guest {
+  width: 100%;
+  height: 42px;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color .2s ease, color .2s ease, transform .05s ease;
+}
+.login-modern__guest:hover {
+  border-color: color-mix(in oklab, var(--text) 20%, var(--border));
+  color: color-mix(in oklab, var(--text) 70%, var(--muted));
+}
+.login-modern__guest:active { transform: translateY(1px); }
+
+/* 소형 화면 여백 보정 */
+@media (max-width: 420px) {
+  .login-modern__form { padding: 22px; }
+}

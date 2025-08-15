@@ -1,0 +1,30 @@
+/* theme.css 토큰만 사용 */
+/* 헤더 높이와 콘텐츠 상단 패딩을 맞추기 위한 로컬 변수 */
+.app-shell { --header-h: 56px; }
+
+.app-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, var(--bg-grad1) 0%, transparent 60%),
+    radial-gradient(800px 400px at 100% 0%, var(--bg-grad2) 0%, transparent 60%),
+    var(--bg);
+  color: var(--text);
+}
+
+/* 헤더가 fixed라 콘텐츠에 상단 여백을 줌 */
+.app-shell__content {
+  padding: var(--header-h) 0 24px; /* top / L-R / bottom */
+}
+
+.app-shell__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px; /* 모바일 좌우 안전 여백 */
+}
+
+/* 전체폭이 필요한 페이지를 위한 유틸 */
+.app-shell__content > .full-bleed,
+.app-shell__inner > .full-bleed {
+  max-width: none;
+  padding: 0;
+}

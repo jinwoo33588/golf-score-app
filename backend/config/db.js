@@ -1,15 +1,15 @@
 const mysql = require('mysql2/promise');
+require('dotenv').config();
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: +process.env.DB_PORT || 3306,
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: Number(process.env.DB_PORT || 3306),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: +process.env.DB_CONN_LIMIT || 10,
-  timezone: process.env.DB_TIMEZONE || 'Z', // 'Z' = UTC
-  // dateStrings: true, // 날짜를 문자열로 받고 싶으면 주석 해제
+  connectionLimit: Number(process.env.DB_CONN_LIMIT || 10),
+  timezone: process.env.DB_TIMEZONE || 'Z', // UTC
 });
 
-module.exports = pool;
+module.exports = { pool };

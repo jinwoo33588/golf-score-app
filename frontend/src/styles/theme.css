@@ -1,0 +1,105 @@
+/* src/styles/theme.css */
+/* 기본(네이비) 토큰 – 컴포넌트 CSS는 전부 이 변수만 사용 */
+:root {
+  /* surfaces */
+  --bg: #0b1020;
+  --card: #11172a;
+  --card-2: #0f1423;
+
+  /* text */
+  --text: #e8ecf3;
+  --muted: #a4b0c0;
+
+  /* accent */
+  --primary: #6aa6ff;
+  --primary-2: #4f7dff;
+  --ring: #8ab4ff;
+  --danger: #ff7171;
+
+  /* borders */
+  --border: #23304d;
+
+  /* header/nav */
+  --header-bg: rgba(10, 15, 30, 0.85);
+  --link: #cfd8ea;
+  --link-active: #ffffff;
+
+  /* 배경 그라디언트 스톱 */
+  --bg-grad1: #0f1c45;
+  --bg-grad2: #0f2e5e;
+
+  color-scheme: dark;
+}
+
+/* ▼▼▼ 아래부터는 “어디 요소에 data-theme를 달아도” 그 하위 트리만 색을 바꿈 */
+[data-theme="light"] {
+  --bg: #f6f8fb;
+  --card: #ffffff;
+  --card-2: #f0f3f8;
+
+  --text: #0b1020;
+  --muted: #5d6b82;
+
+  --primary: #2f6fff;
+  --primary-2: #1e4bd6;
+  --ring: #6ca2ff;
+  --danger: #d64242;
+
+  --border: #dbe3ef;
+  --header-bg: rgba(255,255,255,0.85);
+  --link: #324050;
+  --link-active: #0b1020;
+
+  --bg-grad1: #ffffff;
+  --bg-grad2: #ffffff;
+
+  color-scheme: light;
+}
+
+[data-theme="dim"] {
+  --bg: #0e121b;
+  --card: #141a26;
+  --card-2: #121826;
+
+  --text: #e6ebf4;
+  --muted: #9aa7bd;
+
+  --primary: #7aa2ff;
+  --primary-2: #5c86ff;
+  --ring: #7aa2ff;
+  --danger: #ff7b7b;
+
+  --border: #1e2a3f;
+  --header-bg: rgba(14, 18, 27, 0.85);
+  --link: #cdd7ea;
+  --link-active: #ffffff;
+
+  --bg-grad1: #121a2d;
+  --bg-grad2: #0f1726;
+
+  color-scheme: dark;
+}
+
+[data-theme="forest"] {
+  --bg: #0d1512;
+  --card: #0f1d19;
+  --card-2: #0c1915;
+
+  --text: #e5f2ec;
+  --muted: #9db6ab;
+
+  --primary: #4cd39b;
+  --primary-2: #2fbf85;
+  --ring: rgba(76, 211, 155, 0.5);
+  --danger: #ff8a8a;
+
+  --border: #173a2e;
+  --header-bg: rgba(9, 18, 15, 0.85);
+  --link: #cfe7dd;
+  --link-active: #ffffff;
+
+  --bg-grad1: #0e241d;
+  --bg-grad2: #0c1d18;
+
+  color-scheme: dark;
+}

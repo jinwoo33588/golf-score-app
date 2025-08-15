@@ -4,17 +4,17 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "dev": "nodemon index.js",
+    "preflight": "node scripts/preflight.js",
+    "dev": "node scripts/preflight.js && node index.js",
+    "dev:watch": "node scripts/preflight.js && npx nodemon -r dotenv/config index.js",
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "mysql2": "^3.14.3"
   },
