@@ -1,0 +1,8 @@
+.stepper{display:inline-flex;align-items:center;gap:8px}
+.stepper__btn{
+  width:28px;height:28px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;
+}
+.stepper__val{width:32px;text-align:center}
+.stepper__clr{margin-left:2px;font-size:12px;color:var(--txt-muted);background:transparent;border:none;cursor:pointer}
+.stepper__btn:hover{background:#f3f4f6}
+.stepper__clr:hover{text-decoration:underline}

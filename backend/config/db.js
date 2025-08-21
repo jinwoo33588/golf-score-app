@@ -12,4 +12,20 @@ const pool = mysql.createPool({
   timezone: process.env.DB_TIMEZONE || 'Z', // UTC
 });
 
-module.exports = { pool };
+
+async function tx(fn) {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const result = await fn(conn);
+    await conn.commit();
+    return result;
+  } catch (err) {
+    try { await conn.rollback(); } catch {}
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
+module.exports = { pool, tx };

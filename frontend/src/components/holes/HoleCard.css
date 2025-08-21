@@ -1,0 +1,51 @@
+/* 카드 베이스 (기존과 유사) */
+.hole{border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:#fff;box-shadow:var(--shadow-sm)}
+.hole__head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.hole__title{font-weight:700}
+.hole__select{border:1px solid var(--border);border-radius:10px;padding:6px 10px;background:#fff}
+
+.hole__memo{
+  margin-top:10px;width:100%;border:1px solid var(--border);border-radius:10px;padding:8px 10px;
+  font-family:inherit;font-size:14px;resize:vertical;min-height:64px;
+}
+.hole__memo:focus{outline:2px solid rgba(37,99,235,.25);outline-offset:2px}
+
+/* LabelVal 스타일 그리드 */
+.holelv__grid{
+  display:grid;gap:8px;
+  grid-template-columns:repeat(6, 1fr);
+  margin-top:6px;
+}
+@media (max-width: 820px){
+  .holelv__grid{grid-template-columns:repeat(2, 1fr)}
+}
+@media (max-width: 560px){
+  .holelv__grid{grid-template-columns:1fr}
+}
+
+/* LabelVal 박스 */
+.holelv{
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--chip-bg);
+  padding:6px 8px;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  align-items:center;
+  min-height:58px;
+}
+.holelv__label{
+  font-size:10px;
+  text-transform:uppercase;
+  color:var(--txt-muted);
+  letter-spacing:.3px;
+  margin-bottom:4px;
+}
+.holelv__ctrl{
+  display:flex;align-items:center;justify-content:center;
+}
+.holelv--readonly .holelv__ctrl{justify-content:center}
+.holelv__value{font-weight:700}
+
+/* (참고) NumberStepper는 자체 css 사용 */
+/* (참고) TriStateToggle은 기존 TriStateToggle.css 사용 */

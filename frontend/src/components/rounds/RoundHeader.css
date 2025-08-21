@@ -1,0 +1,18 @@
+.rhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rhdr__title{font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px}
+.rhdr__sub{margin-top:4px;color:var(--txt-muted);display:flex;gap:8px;align-items:center}
+.rhdr__r{display:flex;gap:8px}
+.badge{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--border)}
+.badge--final{background:#ecfdf5;color:var(--ok);border-color:#a7f3d0}
+.badge--draft{background:#fffbeb;color:var(--warn);border-color:#fde68a}
+
+/* 편집/변경됨 뱃지 */
+.editBadge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;color:#64748b;background:#f1f5f9;
+  border:1px solid #e2e8f0;border-radius:999px;padding:2px 8px;
+}
+.editBadge.is-dirty{color:#0f172a;background:#e2e8f0;border-color:#cbd5e1}
+.editBadge.is-dirty::before{
+  content:'';width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block;
+}

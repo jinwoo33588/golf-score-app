@@ -9,6 +9,8 @@ import AuthLayout from './components/layout/AuthLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
+import RoundsListPage from './pages/RoundsListPage';
+import RoundDetailPage from './pages/RoundDetailPage';
 
 // 인증 보호
 import ProtectedRoute from './components/ProtectedRoute';
@@ -28,6 +30,8 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<AppShell />}>
           <Route index element={<HomePage />} />
+          <Route path="/rounds" element={<RoundsListPage />} />
+          <Route path="/rounds/:id" element={<RoundDetailPage />} />
           {/* <Route path="/rounds" element={<RoundListPage />} />
           <Route path="/rounds/:roundId" element={<RoundDetailPage />} />
           <Route path="/rounds/:roundId/edit" element={<RoundEditPage />} />

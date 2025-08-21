@@ -1,0 +1,27 @@
+ /* 전역 스타일 */
+
+:root{
+  --bg: #ffffff;
+  --txt: #1f2937;
+  --txt-muted: #6b7280;
+
+  --primary: #2563eb;
+  --primary-600: #1d4ed8;
+  --danger: #dc2626;
+  --danger-600: #b91c1c;
+  --ok: #16a34a;
+  --warn: #d97706;
+
+  --border: #e5e7eb;
+  --chip-bg: #f9fafb;
+
+  --radius: 12px;
+  --shadow: 0 6px 20px rgba(0,0,0,0.06);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+}

@@ -1,0 +1,6 @@
+.holes__grid{display:grid;grid-template-columns:repeat(1,1fr);gap:12px}
+@media (max-width: 1200px){ .holes__grid{grid-template-columns:repeat(1,1fr)} }
+@media (max-width: 760px){ .holes__grid{grid-template-columns:1fr} }
+
+.rdp__box{padding:12px;border:1px dashed var(--border);border-radius:var(--radius)}
+.rdp__error{padding:12px;border:1px solid #fecaca;border-radius:var(--radius);background:#fef2f2;color:#b91c1c}

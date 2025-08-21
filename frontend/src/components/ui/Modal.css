@@ -1,0 +1,12 @@
+.modal__backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;z-index:999;
+}
+.modal__panel{
+  width:min(480px,92%);background:#fff;border-radius:var(--radius);
+  border:1px solid var(--border);box-shadow:var(--shadow);padding:16px;
+}
+.modal__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.modal__title{margin:0;font-size:16px;font-weight:700}
+.modal__body{display:grid;gap:10px}
+.modal__foot{margin-top:12px;display:flex;justify-content:flex-end;gap:8px}

@@ -1,0 +1,14 @@
+.rcard{border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:#fff;box-shadow:var(--shadow-sm)}
+.rcard:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+
+.rcard__top{display:flex;align-items:center;justify-content:space-between}
+.rcard__title{font-weight:700}
+.rcard__sub{color:var(--txt-muted);font-size:13px;margin-top:2px}
+
+.rcard__stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+
+.badge{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--border)}
+.badge--final{background:#ecfdf5;color:var(--ok);border-color:#a7f3d0}
+.badge--draft{background:#fffbeb;color:var(--warn);border-color:#fde68a}
+
+.rcard__actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}

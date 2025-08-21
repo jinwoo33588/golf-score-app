@@ -1,0 +1,35 @@
+.mt{
+  position:relative;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fff;
+  box-shadow:var(--shadow-sm);
+  padding:10px 12px 10px 14px;
+}
+.mt::before{
+  content:"";
+  position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:12px 0 0 12px;
+  background:#e5e7eb;
+}
+
+/* sizes */
+.mt--md .mt__label{font-size:11px}
+.mt--md .mt__value{font-size:18px;font-weight:800}
+.mt--sm .mt__label{font-size:10px}
+.mt--sm .mt__value{font-size:16px;font-weight:800}
+
+/* label/value/hint */
+.mt__label{text-transform:uppercase;color:var(--txt-muted);letter-spacing:.3px}
+.mt__value{line-height:1.2;margin-top:2px}
+.mt__hint{margin-top:4px;font-size:12px;color:var(--txt-muted)}
+
+/* percent bar */
+.mt__bar{margin-top:6px;height:6px;background:#eef2f7;border-radius:6px;overflow:hidden}
+.mt__fill{height:100%;background:var(--primary);border-radius:6px}
+
+/* accents (왼쪽 컬러 바) */
+.mt--blue::before{background:#3b82f6}
+.mt--green::before{background:#10b981}
+.mt--amber::before{background:#f59e0b}
+.mt--red::before{background:#ef4444}
+.mt--gray::before{background:#9ca3af}

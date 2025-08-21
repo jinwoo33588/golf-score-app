@@ -1,0 +1,5 @@
+.tri{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tri__btn{padding:4px 10px;background:#fff;border:none;border-right:1px solid var(--border);cursor:pointer;font-size:13px}
+.tri__btn:last-child{border-right:none}
+.tri__btn.is-active{background:var(--primary);color:#fff}
+.tri--disabled{opacity:.5;pointer-events:none}

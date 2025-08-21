@@ -1,0 +1,6 @@
+.chip{
+  border:1px solid var(--border);border-radius:10px;background:var(--chip-bg);
+  padding:6px 8px;text-align:center;
+}
+.chip__label{font-size:10px;text-transform:uppercase;color:var(--txt-muted);letter-spacing:.3px}
+.chip__value{font-weight:700}
