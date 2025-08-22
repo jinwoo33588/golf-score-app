@@ -1,0 +1,123 @@
+:root{
+  --bd:#e5e7eb; --muted:#6b7280; --ring:#3b82f6;
+  --memo-w:260px;
+}
+
+/* 컨테이너: 가로 넘침 방지 */
+.cal-root{
+  width:100%;
+  height:100vh;
+  overflow:hidden;       /* 가로 스크롤 방지 */
+  background:#fff; color:#111827;
+  position:relative;     /* 오버레이 배치 기준 */
+}
+
+/* 좌/우 2열 레이아웃 (메모 고정 + 달력 가변) */
+.cal-layout{
+  height:100%;
+  display:grid;
+  grid-template-columns: var(--memo-w) minmax(0,1fr);
+  gap:12px; padding:12px; box-sizing:border-box;
+}
+
+/* 메모 */
+.cal-memo{
+  border:1px solid var(--bd); border-radius:12px; padding:12px; background:#fff;
+  display:grid; grid-template-rows:auto 1fr; gap:8px;
+}
+.memo-head{ display:flex; align-items:baseline; gap:8px; }
+.memo-head h3{ margin:0; font-size:16px; }
+.memo-head .sub{ font-size:12px; color:var(--muted); }
+.cal-memo textarea{
+  width:100%; height:100%; resize:none;
+  border:1px solid var(--bd); border-radius:8px; padding:8px; font-size:14px; font-family:inherit;
+}
+
+/* 달력 메인 */
+.cal-main{ display:grid; grid-template-rows:40px 1fr; gap:8px; }
+.cal-header{
+  border:1px solid var(--bd); border-radius:12px; background:#fff;
+  display:flex; align-items:center; justify-content:center; gap:12px; padding:6px 8px;
+}
+.cal-header button{
+  border:1px solid var(--bd); background:#f9fafb; border-radius:8px; padding:4px 10px; cursor:pointer;
+}
+
+/* 달력 그리드 */
+.cal-grid{
+  height:100%;
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: 28px repeat(6, 1fr);
+  gap:8px;
+}
+.cal-weekhead{ font-weight:600; text-align:center; border-bottom:1px solid var(--bd); line-height:28px; }
+.cal-cell{
+  border:1px solid var(--bd); border-radius:10px; padding:6px; min-width:0;
+  display:flex; flex-direction:column; gap:6px; background:#fff; cursor:pointer;
+}
+.cal-cell.dim{ opacity:.45; }
+.cal-cell.today{ outline:2px solid var(--ring); }
+.cal-cell-head{ display:flex; justify-content:space-between; align-items:center; }
+.cal-cell-head .day{ font-weight:700; }
+.cal-cell-head .add{ background:#f3f4f6; border:none; border-radius:8px; padding:2px 6px; cursor:pointer; }
+.cal-events{ display:flex; flex-direction:column; gap:6px; overflow:hidden; }
+.cal-event{
+  display:flex; align-items:center; justify-content:space-between; gap:6px;
+  padding:4px 6px; border:1px solid var(--bd); border-radius:8px; font-size:12px; background:#e0f2fe; min-width:0;
+}
+.cal-event .ttl{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cal-event .del{ border:none; background:transparent; cursor:pointer; color:#ef4444; font-weight:bold; }
+
+/* ===== 오버레이 패널 ===== */
+.cal-overlay{
+  position:absolute; inset:0; z-index:40;
+  pointer-events:none;  /* 내부 요소만 이벤트 받도록 */
+}
+.cal-overlay.show{ pointer-events:auto; }
+
+.cal-backdrop{
+  position:absolute; inset:0;
+  background:rgba(0,0,0,.35);
+  opacity:0; transition:opacity .2s ease;
+}
+.cal-overlay.show .cal-backdrop{ opacity:1; }
+
+.cal-sheet{
+  position:absolute; top:0; right:0; height:100%;
+  width: clamp(320px, 35vw, 420px);
+  background:#fffdf7; border-left:1px solid var(--bd);
+  box-shadow: -8px 0 24px rgba(0,0,0,.15);
+  transform: translateX(100%); transition: transform .22s ease;
+  display:grid; grid-template-rows:auto 1fr auto; gap:10px; padding:12px;
+}
+.cal-overlay.show .cal-sheet{ transform: translateX(0%); }
+
+.sheet-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.sheet-head h4{ margin:0; }
+.sheet-close{ border:1px solid var(--bd); background:#fff; border-radius:8px; padding:4px 8px; cursor:pointer; }
+
+.sheet-empty{
+  border:1px dashed var(--bd); border-radius:10px; padding:10px; color:var(--muted); align-self:start; background:#fff;
+}
+.sheet-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; overflow:auto; }
+.sheet-item{
+  display:grid; grid-template-columns:18px 1fr auto; align-items:center; gap:8px;
+  background:#fff; border:1px solid var(--bd); border-radius:10px; padding:8px;
+}
+.sheet-item .bullet{ font-size:18px; line-height:1; color:#334155; }
+.sheet-item .content{ display:grid; gap:2px; }
+.sheet-item .title{ font-weight:600; }
+.sheet-item .meta{ font-size:12px; color:var(--muted); }
+.sheet-item .x{ border:none; background:transparent; cursor:pointer; font-size:16px; color:#ef4444; }
+
+.sheet-actions{ display:flex; justify-content:flex-end; }
+.sheet-actions .primary{ border:none; border-radius:10px; padding:8px 12px; background:#111827; color:#fff; cursor:pointer; }
+
+/* 반응형: 좁을 때 1열 스택 */
+@media (max-width: 900px){
+  .cal-layout{ grid-template-columns: 200px minmax(0,1fr); }
+}
+@media (max-width: 760px){
+  .cal-layout{ grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+}

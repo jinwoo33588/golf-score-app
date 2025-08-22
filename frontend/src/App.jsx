@@ -12,6 +12,8 @@ import HomePage from './pages/HomePage';
 import RoundsListPage from './pages/RoundsListPage';
 import RoundDetailPage from './pages/RoundDetailPage';
 import StatsPage from './pages/StatsPage';
+import CalendarPage from './pages/CalendarPage';
+import CalendarTest from './pages/CalendarTest';
 
 // 인증 보호
 import ProtectedRoute from './components/ProtectedRoute';
@@ -34,6 +36,7 @@ export default function App() {
           <Route path="/rounds" element={<RoundsListPage />} />
           <Route path="/rounds/:id" element={<RoundDetailPage />} />
           <Route path="/stats" element={<StatsPage />} /> 
+          <Route path="/calendar" element={<CalendarTest />} />
           {/* <Route path="/rounds" element={<RoundListPage />} />
           <Route path="/rounds/:roundId" element={<RoundDetailPage />} />
           <Route path="/rounds/:roundId/edit" element={<RoundEditPage />} />

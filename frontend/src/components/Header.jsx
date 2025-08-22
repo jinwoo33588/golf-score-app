@@ -65,6 +65,15 @@ export default function Header() {
           >
             통계
           </NavLink>
+          <NavLink
+            to="/calendar"
+            className={({ isActive }) =>
+              `header__link ${isActive ? 'is-active' : ''}`
+            }
+            onClick={() => setOpen(false)}
+          >
+            캘린더
+          </NavLink>
         </nav>
 
         {/* 유저/로그아웃 */}

@@ -1,0 +1,27 @@
+.calendar-page { padding:16px; }
+.cal-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.cal-header h2 { margin:0 auto; }
+
+.cal-grid {
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap:8px;
+}
+.cal-weekhead { font-weight:600; text-align:center; padding:6px 0; border-bottom:1px solid #eee; }
+.cal-cell {
+  border:1px solid #ddd; border-radius:8px; padding:6px; min-height:100px;
+  display:flex; flex-direction:column; gap:4px;
+}
+.cal-cell.dim { opacity:.4; }
+.cal-cell.today { outline:2px solid #3b82f6; }
+.cal-cell-head { display:flex; justify-content:space-between; }
+.cal-cell-head .day { font-weight:600; }
+.cal-cell-head .add { background:#f3f4f6; border:none; border-radius:6px; cursor:pointer; }
+
+.cal-events { display:flex; flex-direction:column; gap:4px; font-size:13px; }
+.cal-event { background:#e0f2fe; padding:2px 4px; border-radius:4px; }
+
+.modal { position:fixed; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; }
+.modal-body { background:#fff; padding:16px; border-radius:8px; width:300px; }
+.modal-form { display:flex; flex-direction:column; gap:8px; }
+.modal-actions { display:flex; justify-content:flex-end; gap:8px; }
