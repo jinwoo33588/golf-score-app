@@ -11,6 +11,7 @@ import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
 import RoundsListPage from './pages/RoundsListPage';
 import RoundDetailPage from './pages/RoundDetailPage';
+import StatsPage from './pages/StatsPage';
 
 // 인증 보호
 import ProtectedRoute from './components/ProtectedRoute';
@@ -32,6 +33,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="/rounds" element={<RoundsListPage />} />
           <Route path="/rounds/:id" element={<RoundDetailPage />} />
+          <Route path="/stats" element={<StatsPage />} /> 
           {/* <Route path="/rounds" element={<RoundListPage />} />
           <Route path="/rounds/:roundId" element={<RoundDetailPage />} />
           <Route path="/rounds/:roundId/edit" element={<RoundEditPage />} />

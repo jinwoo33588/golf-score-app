@@ -1,0 +1,97 @@
+.trendChart {
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.trendChart__controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+/* 지표 토글 */
+.metricToggle {
+  display: flex;
+  gap: 6px;
+}
+.metricBtn {
+  border: 1px solid #e0e0e0;
+  background: #f8f8f8;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.metricBtn.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* Y축 컨트롤 */
+.yaxisControls {
+  display: flex;
+  align-items: center;
+}
+.yaxisModes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.yaxisModes .radio {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+}
+.yaxisModes .radio.disabled {
+  opacity: 0.5;
+}
+
+.manualBox {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.manualBox input[type="number"] {
+  width: 88px;
+  padding: 4px 6px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.manualBox .tilde {
+  color: #999;
+}
+.btnSmall {
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f6f6f6;
+  cursor: pointer;
+}
+
+.trendChart__wrap {
+  width: 100%;
+  height: 260px;
+}
+
+.trend__state {
+  font-size: 14px;
+  color: #666;
+  padding: 12px;
+}
+.trend__state.error {
+  color: #b00020;
+}
+.trend__state.subtle {
+  color: #999;
+  text-align: center;
+}

@@ -1,5 +1,7 @@
 // backend/controllers/holeController.js
 const { pool } = require('../config/db');
+const { finalizeIfCompleteScores } = require('../services/statsService');
+
 
 /* ---------- 공통 유틸 ---------- */
 const intOrNull = (x) => {
@@ -62,7 +64,18 @@ exports.updateOne = async (req, res, next) => {
     vals.push(holeId);
     await pool.query(`UPDATE holes SET ${fields.join(', ')} WHERE id=?`, vals);
 
+    // 수정 후 최신 데이터 조회
     const [[row]] = await pool.query('SELECT * FROM holes WHERE id=?', [holeId]);
+
+    // ✅ 추가: 자동 final 판정 (18홀 & 모든 score 입력 시 final, 다운그레이드 없음)
+    const userId = req.user.id;                         // ✅ 추가
+    if (row?.round_id) {                                // ✅ 추가
+      await finalizeIfCompleteScores({                  // ✅ 추가
+        roundId: row.round_id,                          // ✅ 추가
+        userId                                          // ✅ 추가
+      });                                               // ✅ 추가
+    }                                                   // ✅ 추가
+
     res.json({ data: row });
   } catch (e) { next(e); }
 };
@@ -71,7 +84,9 @@ exports.updateOne = async (req, res, next) => {
 exports.bulkUpdate = async (req, res, next) => {
   const roundId = Number(req.params.id);
   const body = Array.isArray(req.body) ? req.body
-             : (Array.isArray(req.body?.items) ? req.body.items : null);
+            : Array.isArray(req.body?.items) ? req.body.items
+            : Array.isArray(req.body?.holes) ? req.body.holes
+            : null;
   if (!body) return res.status(400).json({ error: { message: 'body must be array or {items:[]}' } });
 
   let conn;
@@ -103,6 +118,13 @@ exports.bulkUpdate = async (req, res, next) => {
     }
 
     await conn.commit();
+
+    // ✅ 추가: 벌크 저장 후 자동 final 판정 (다운그레이드 없음)
+    const userId = req.user.id;                         // ✅ 추가
+    await finalizeIfCompleteScores({                    // ✅ 추가
+      roundId,                                          // ✅ 추가
+      userId                                            // ✅ 추가
+    });                                                 // ✅ 추가
 
     const [rows] = await pool.query('SELECT * FROM holes WHERE round_id=? ORDER BY hole_number', [roundId]);
     res.json({ data: rows });

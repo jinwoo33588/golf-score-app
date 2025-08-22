@@ -1,0 +1,26 @@
+.recentRounds { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.recentRounds__state { color: #666; }
+.recentRounds__state.error { color: #d33; }
+
+.recentRounds__card {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid #e4e4e4;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: transform .05s ease, box-shadow .15s ease;
+}
+.recentRounds__card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.06); transform: translateY(-1px); }
+
+.recentRounds__top { display:flex; gap: 12px; margin-bottom:8px; font-weight: 600; }
+.recentRounds__course { color:#333; }
+.recentRounds__date { color:#666; }
+
+.recentRounds__main { display:flex; justify-content:space-between; align-items:baseline; gap: 12px; }
+.recentRounds__score .label { color:#666; margin-right: 6px; }
+.recentRounds__score .rel { margin-left:8px; font-weight:600; }
+.recentRounds__score .rel.good { color:#1f8b4c; }
+.recentRounds__score .rel.bad { color:#b23b3b; }
+.recentRounds__sub { color:#666; display:flex; gap:12px; flex-wrap:wrap; font-size: 14px; }

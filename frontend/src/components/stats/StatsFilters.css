@@ -1,0 +1,9 @@
+.sfilters{border:1px solid var(--border);border-radius:var(--radius);padding:10px;background:#fff;box-shadow:var(--shadow-sm);margin-bottom:12px}
+.sfilters__row{display:flex;gap:12px;flex-wrap:wrap}
+.sfilters__group{display:flex;align-items:center;gap:8px}
+.sfilters__grow{flex:1}
+.sfilters__label{font-size:12px;color:var(--txt-muted)}
+.sfilters__dash{color:var(--txt-muted)}
+.sfilters input, .sfilters select{
+  border:1px solid var(--border);border-radius:8px;padding:6px 8px;background:#fff
+}

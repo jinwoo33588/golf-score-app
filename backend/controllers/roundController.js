@@ -1,5 +1,6 @@
 // backend/controllers/roundController.js
 const { pool } = require('../config/db');
+const roundService = require('../services/roundService');
 
 /* ---------- 목록 ---------- */
 // GET /api/rounds?status=all|draft|final&limit=50
@@ -48,16 +49,15 @@ exports.create = async (req, res, next) => {
     const { course_name, date, tee_time=null, notes=null } = req.body || {};
     if (!course_name || !date) return res.status(400).json({ message: 'course_name and date required' });
 
-    const [r] = await pool.query(
-      `INSERT INTO rounds (user_id, course_name, date, tee_time, status, notes)
-       VALUES (?,?,?,?, 'draft', ?)`,
-      [req.user.id, course_name, date, tee_time, notes]
-    );
-    const id = r.insertId;
-
-    // (선택) 1~18 기본홀 미리 생성하려면 여기에 INSERT bulk 추가
-
-    res.status(201).json({ data: { id } });
+    // 서비스의 트랜잭션 함수 호출 → 라운드 + 18홀 자동 생성
+   const id = await roundService.createRound({
+       userId: req.user.id,
+       course_name,
+       date,
+       tee_time,
+       notes,
+     });
+     res.status(201).json({ data: { id } });
   } catch (e) { next(e); }
 };
 

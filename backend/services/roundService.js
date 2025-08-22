@@ -1,5 +1,5 @@
 const { pool, tx } = require('../config/db');
-const { assertRoundOwner } = require('../utils/ownership');
+const { assertRoundOwnerSvc } = require('../utils/ownership');
 
 /**
  * 라운드 생성 + 18홀 스켈레톤 생성(트랜잭션)
@@ -31,7 +31,7 @@ async function createRound({ userId, course_name, date, tee_time = null, notes =
  * 소유권 체크 포함
  */
 async function getRoundDetail({ roundId, userId }) {
-  await assertRoundOwner(roundId, userId); // 없거나 타인 소유면 에러
+  await assertRoundOwnerSvc(roundId, userId); // 없거나 타인 소유면 에러
 
   const [[round]] = await pool.query('SELECT * FROM rounds WHERE id=?', [roundId]);
   const [holes]  = await pool.query(

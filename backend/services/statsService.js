@@ -161,4 +161,36 @@ function num(v) {
   return Number.isNaN(n) ? null : n;
 }
 
-module.exports = { getRoundStats, getUserOverview };
+/** 
+ * 18홀 모두 있고, 각 홀의 score가 전부 NULL이 아니면 라운드를 final로 올린다.
+ * - putts는 검사하지 않음
+ * - final → draft 다운그레이드는 하지 않음
+ */
+async function finalizeIfCompleteScores({ roundId, userId }) {
+  // 소유권 보장
+  await assertRoundOwner(roundId, userId);
+
+  const [[row]] = await pool.query(
+    `SELECT 
+       COUNT(*)                 AS holesCnt,
+       SUM(h.score IS NOT NULL) AS filledScores
+     FROM holes h
+     WHERE h.round_id = ?`,
+    [roundId]
+  );
+
+  const holesCnt = Number(row?.holesCnt || 0);
+  const filledScores = Number(row?.filledScores || 0);
+
+  // 18홀 모두 존재 + 모든 score가 입력됨
+  if (holesCnt === 18 && filledScores === 18) {
+    await pool.query(
+      `UPDATE rounds 
+          SET status='final' 
+        WHERE id=? AND user_id=? AND status <> 'final'`,
+      [roundId, userId]
+    );
+  }
+}
+
+module.exports = { getRoundStats, getUserOverview, finalizeIfCompleteScores };
