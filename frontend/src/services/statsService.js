@@ -1,25 +1,60 @@
-// src/services/statsService.js (프론트용)
-import { fetchRecentRounds } from './roundService';
+// src/services/statsService.js
+import axios from '../lib/axiosInstance';
+import { fetchRecentRounds } from './roundService'; // trend 404 폴백용
 
-const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0) / arr.length) : null;
-const n = (v) => (v == null ? null : Number(v));
-const onlyNums = (arr) => arr.map(n).filter((x)=> typeof x === 'number' && !Number.isNaN(x));
+const unwrap = (res) => (res?.data?.data ?? res?.data ?? null);
 
-export async function fetchStatsSummary(limit = 5) {
-  const rounds = await fetchRecentRounds(limit);
+/** 개요 통계 */
+export async function fetchStatsSummary(
+  params = { from: null, to: null, status: 'final' },
+  options = {} // { signal } 등 axios config
+) {
+  const res = await axios.get('/stats/overview', { ...options, params });
+  return unwrap(res); // { rounds_count, avg_strokes, avg_score, ... }
+}
 
-  const strokes = onlyNums(rounds.map(r => r.total_strokes));
-  const putts   = onlyNums(rounds.map(r => r.total_putts));
+/** 라운드 단일 통계 */
+export async function fetchRoundStats(
+  roundId,
+  mode = 'partial',
+  options = {}
+) {
+  if (!roundId) throw new Error('roundId required');
+  const res = await axios.get(`/rounds/${roundId}/stats`, { ...options, params: { mode } });
+  return unwrap(res); // { round_id, total_strokes, ... }
+}
 
-  const firHit = rounds.reduce((a,r)=> a + Number(r.fir_hit_count || 0), 0);
-  const firPos = rounds.reduce((a,r)=> a + Number(r.fir_possible   || 0), 0);
-  const girHit = rounds.reduce((a,r)=> a + Number(r.gir_hit_count || 0), 0);
-  const girPos = rounds.reduce((a,r)=> a + Number(r.gir_possible   || 0), 0);
-
-  return {
-    avgScore: strokes.length ? Number(avg(strokes).toFixed(1)) : null,
-    avgPutts: putts.length   ? Number(avg(putts).toFixed(1))   : null,
-    firPercent: firPos > 0 ? Math.round((firHit / firPos) * 100) : null,
-    girPercent: girPos > 0 ? Math.round((girHit / girPos) * 100) : null,
-  };
+/** 추세 */
+export async function fetchTrend(
+  params = { limit: 8, includeDraft: false },
+  options = {}
+) {
+  try {
+    const res = await axios.get('/stats/trend', { ...options, params });
+    return unwrap(res) ?? { items: [] };
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      // 백엔드 라우트 생기기 전 임시 폴백
+      const rounds = await fetchRecentRounds(params.limit ?? 8);
+      const items = (rounds || []).map((r) => ({
+        round_id: r.id,
+        date: r.date,
+        course_name: r.course_name,
+        strokes: r.total_strokes ?? null,
+        score:
+          typeof r.total_score === 'number' ? r.total_score :
+          typeof r.to_par === 'number'       ? r.to_par :
+          typeof r.score === 'number'        ? r.score : null,
+        putts: r.putts_total ?? null,
+        fir_pct: (typeof r.fir_pct === 'number')
+          ? r.fir_pct
+          : (r.fir_possible ? Math.round(((r.fir_hit_count ?? 0) / r.fir_possible) * 1000) / 10 : null),
+        gir_pct: (typeof r.gir_pct === 'number')
+          ? r.gir_pct
+          : (r.gir_possible ? Math.round(((r.gir_hit_count ?? 0) / r.gir_possible) * 1000) / 10 : null),
+      }));
+      return { items };
+    }
+    throw e;
+  }
 }

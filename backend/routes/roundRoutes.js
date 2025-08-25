@@ -2,8 +2,7 @@
 const router = require('express').Router();
 const roundController = require('../controllers/roundController');
 const { auth } = require('../middleware/auth');
-const { assertRoundOwner } = require('../utils/ownership');
-
+const { assertRoundOwnerMw: assertRoundOwner } = require('../utils/ownership');
 // 목록
 router.get('/rounds', auth, roundController.listMine);
 

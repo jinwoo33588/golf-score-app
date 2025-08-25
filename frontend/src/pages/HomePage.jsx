@@ -13,15 +13,17 @@ export default function HomePage() {
       </header>
 
       <section className="home__section">
-        <h2 className="home__sectionTitle">최근 라운드 (5개)</h2>
-        <RecentRounds limit={5} />
-      </section>
-
-      <section className="home__section">
         <h2 className="home__sectionTitle">통계 요약</h2>
         <StatsSummary />
       </section>
 
+
+      <section className="home__section">
+              <h2 className="home__sectionTitle">최근 라운드 (5개)</h2>
+              <RecentRounds limit={5} />
+      </section>
+
+      
       <section className="home__section">
         <h2 className="home__sectionTitle">최근 트렌드</h2>
         <TrendChart />
