@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useRounds, useDeleteRound } from '@/hooks/useRounds';
 import { Button } from '@/components/ui/button';
-import { signedStr } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
 import { Round } from '@/types';
 
 // 스코어에 따라 배지 색상

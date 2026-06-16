@@ -158,7 +158,7 @@ export default function StatsPage() {
   const bestScore = n ? Math.min(...rounds.map((r) => r.summary.totalScore)) : '-';
   const avgFir = n ? (rounds.reduce((s, r) => s + r.summary.firRate, 0) / n).toFixed(1) : '-';
   const avgGir = n ? (rounds.reduce((s, r) => s + r.summary.girRate, 0) / n).toFixed(1) : '-';
-  const avgPutt = n ? (rounds.reduce((s, r) => s + r.summary.totalPutts, 0) / n).toFixed(1) : '-';
+  const _avgPutt = n ? (rounds.reduce((s, r) => s + r.summary.totalPutts, 0) / n).toFixed(1) : '-';
 
   return (
     <div className="p-6 max-w-5xl mx-auto">

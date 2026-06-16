@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn, scoreClass, scoreLabel } from '@/lib/utils';
+import { cn, scoreClass } from '@/lib/utils';
 import { ChevronRight, ChevronLeft, Search, Minus, Plus, CheckCircle2, X } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '';

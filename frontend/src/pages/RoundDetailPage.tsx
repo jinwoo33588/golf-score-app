@@ -4,7 +4,7 @@ import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useRound, useDeleteRound } from '@/hooks/useRounds';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { formatDate, scoreClass, scoreLabel, signedStr } from '@/lib/utils';
+import { formatDate, scoreClass } from '@/lib/utils';
 import { RoundHole } from '@/types';
 
 
