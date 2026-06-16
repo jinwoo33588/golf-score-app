@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { PlusCircle, TrendingUp, Target, Flag, PlayCircle, RotateCcw } from 'lucide-react';
 import { useRounds } from '@/hooks/useRounds';
 import { useAuth } from '@/context/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
 import { Round } from '@/types';
@@ -28,7 +28,6 @@ function StatCard({ title, value, sub, icon: Icon }: { title: string; value: str
 }
 
 function RoundCard({ round }: { round: Round }) {
-  const over = round.summary.overPar;
   return (
     <Link to={`/rounds/${round._id}`}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
