@@ -1,9 +1,16 @@
 node_modules/
 dist/
-.env
-.env.local
 *.log
 .DS_Store
 
+# 환경변수 - 로컬 전용 (민감정보)
+.env
+.env.local
+backend/.env
+backend/.env.local
+
+# frontend/.env.production 은 민감정보 없으므로 커밋 대상
+# backend 프로덕션 환경변수는 Render 대시보드에서 관리
+
 # 런타임 업로드 이미지는 제외 (시드 이미지는 포함)
-# apps/backend/uploads/holes/
+# backend/uploads/holes/
